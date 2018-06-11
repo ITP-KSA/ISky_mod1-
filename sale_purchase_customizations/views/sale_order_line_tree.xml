@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="sale_order_lines_form_view" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                    <field name="line_item"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="sale_order_lines_tree_view" model="ir.ui.view">
+            <field name="name">sale.order.line.line</field>
+            <field name="model">sale.order.line</field>
+            <field name="arch" type="xml">
+                <tree string="Order Lines">
+                    <field name="order_partner_id"/>
+                    <field name="product_id"/>
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <field name="price_unit" sum="Sum price"/>
+                    <field name="product_uom_qty" sum="Sum price"/>
+                    <field name="qty_invoiced" sum="Sum invoiced"/>
+                    <field name="qty_to_invoice" sum="Sum to invoice"/>
+                    <field name="qty_delivered" sum="Sum to Delivered"/>
+                    <field name="price_subtotal" sum="Total Subtotal" widget="monetary"/>
+                    <field name="price_tax" sum="Sum Tax" widget="monetary"/>
+                    <field name="price_total" sum="Sum Total" widget="monetary"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="sale_order_lines_grouped" model="ir.ui.view">
+            <field name="name">sale.order.line.line.grouped</field>
+            <field name="model">sale.order.line</field>
+            <field name="arch" type="xml">
+                <search string="invoice">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Order" context="{'group_by':'order_id'}" name='group_by_order_id'/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="sale_order_lines_tree_action">
+            <field name="name">Ordered Products</field>
+            <field name="res_model">sale.order.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="sale_order_lines_tree_view"/>
+            <field name="domain">[('product_id','!=',False)]</field>
+            <field name="context">{'search_default_group_by_order_id':1}</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_client_po" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@class='row mt32 mb32']" position="inside">
+            <div class="col-xs-2" t-if="o.client_po">
+                <strong>Client's P.O:</strong>
+                <p t-field="o.client_po"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

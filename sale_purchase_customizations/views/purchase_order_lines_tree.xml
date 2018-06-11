@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="purchase_order_line" model="ir.ui.view">
+            <field name="name">purchase.order.line</field>
+            <field name="model">purchase.order.line</field>
+            <field name="arch" type="xml">
+                <tree string="Purchase Products" create="false">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_qty" sum="Total"/>
+                    <field name="product_samj_code"/>
+                    <field name="price_unit" sum="Total"/>
+                    <field name="price_subtotal" sum="Total"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="purchase_order_line_grouped" model="ir.ui.view">
+            <field name="name">purchase.order.line.grouped</field>
+            <field name="model">purchase.order.line</field>
+            <field name="arch" type="xml">
+                <search string="Purchase Product">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Order" context="{'group_by':'order_id'}" name='group_by_order_id'/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="purchase_order_line_action">
+            <field name="name">Purchased Products</field>
+            <field name="res_model">purchase.order.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="purchase_order_line"/>
+            <field name="domain">[('product_id','!=',False)]</field>
+            <field name="context">{'search_default_group_by_order_id':1}</field>
+        </record>
+    </data>
+</odoo>

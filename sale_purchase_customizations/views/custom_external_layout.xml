@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--Mawaten Al-joudwiht header for quotations and invoices-->
+        <template id="custom_external_layout" inherit_id="web.external_layout_standard" primary="True">
+            <xpath expr="//div[@class='header']/div[@class='row'][1]/div[@class='col-xs-3 mb4'][1]/img" position="replace">
+                <img src="/sale_purchase_customizations/static/src/img/mawaten_aljoudwiht.jpeg" style="max-height: 90px;"/>
+            </xpath>
+        </template>
+
+        <template id="external_layout_custom_standard" inherit_id="web.external_layout" primary="True">
+            <xpath expr="//t[7]/t[@t-call='web.external_layout_standard']" position="replace">
+                <t t-call="sale_purchase_customizations.custom_external_layout">
+                    <t t-raw="0"/>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

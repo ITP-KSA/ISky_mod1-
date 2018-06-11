@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit quotation report (from module sale) -->
+    <template id="report_saleorder_document_inherit_client_po" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[@class='row mt32 mb32']" position="inside">
+            <div t-if="doc.client_po" class="col-xs-3">
+                <strong>Client's P.O:</strong>
+                <p t-field="doc.client_po"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

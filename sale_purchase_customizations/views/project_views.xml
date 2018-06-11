@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record id="project_task_inherit" model="ir.ui.view">
+            <field name="name">project.task</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='tag_ids']" position="after">
+                    <field name="badge_number"/>
+                    <field name="line_item"/>
+                    <field name="contact_info"/>
+                    <field name="special_sale"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="project_project_inherit" model="ir.ui.view">
+            <field name="name">project.project.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="rfq_num"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="project.act_project_project_2_project_task_all" model="ir.actions.act_window">
+            <field name="domain">[('parent_id','=',False)]</field>
+        </record>
+    </data>
+</openerp>

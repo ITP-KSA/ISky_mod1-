@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_picking_inherit_client_po" inherit_id="stock.report_picking">
+        <xpath expr="//div[@class='clearfix']" position="after">
+            <p id="client_po" t-if="o.client_po">
+                <strong>Client's P.O:</strong>
+                <span t-field="o.client_po"/>
+            </p>
+        </xpath>
+    </template>
+
+    <template id="report_delivery_document_inherit_sale_stock_client_po" inherit_id="stock.report_delivery_document">
+        <xpath expr="//h2" position="after">
+            <p id="client_po" t-if="o.client_po">
+                <strong>Client's P.O:</strong>
+                <span t-field="o.client_po"/>
+            </p>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!--TODO Stock Move Line-->
+        <record id="stock_move_inherit_tree_view" model="ir.ui.view">
+            <field name="name">stock.move.line.inherit</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="stock.view_move_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="stock.stock_move_line_view_search" model="ir.ui.view">
+            <field name="name">stock.move.line.search</field>
+            <field name="model">stock.move.line</field>
+            <field name="arch" type="xml">
+                <search string="Stock Moves">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <field name="picking_id" string="Reference"/>
+                    <field name="product_id"/>
+                    <field name="location_id" groups="stock.group_stock_multi_locations"/>
+                    <field name="location_dest_id" groups="stock.group_stock_multi_locations"/>
+                    <separator/>
+                    <filter string="To Do" name="todo" domain="[('state','not in', ['done', 'draft'])]"/>
+                    <filter string="Done" name="done" domain="[('state','=','done')]"/>
+                    <separator/>
+                    <filter string="Receptions" name="incoming"
+                            domain="[('picking_id.picking_type_id.code','=','incoming')]"/>
+                    <filter string="Deliveries" name="outgoing"
+                            domain="[('picking_id.picking_type_id.code','=','outgoing')]"/>
+                    <filter string="Internal" name="internal"
+                            domain="[('picking_id.picking_type_id.code','=','internal')]"/>
+                    <filter string="Manufacturing" name="manufacturing"
+                            domain="[('picking_id.picking_type_id.code','=','mrp_operation')]"/>
+
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="by_state" domain="[]" context="{'group_by':'state'}"/>
+                        <filter string="Product" context="{'group_by':'product_id'}" name='group_by_product_id'/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="stock.stock_move_line_action" model="ir.actions.act_window">
+            <field name="name">Product Moves</field>
+            <field name="res_model">stock.move.line</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,kanban,pivot,form</field>
+            <field name="view_id" ref="stock.view_move_line_tree"/>
+            <field name="context">{'search_default_done': 1,'search_default_group_by_product_id': 1,}</field>
+        </record>
+
+        <!--TODO Stock Move-->
+        <record id="stock_move_inherit_tree" model="ir.ui.view">
+            <field name="name">stock.move.inherit</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="stock_move_inherit_search_view" model="ir.ui.view">
+            <field name="name">stock.move.inherit</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Picking" context="{'group_by':'picking_id'}" name='group_by_picking_id'/>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+
+        <record id="stock.stock_move_action" model="ir.actions.act_window">
+            <field name="name">Stock Moves</field>
+            <field name="res_model">stock.move</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="stock.view_move_tree"/>
+            <field name="search_view_id" ref="stock_move_inherit_search_view"/>
+            <field name="context">{'search_default_group_by_picking_id':1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a stock movement.
+                </p>
+                <p>
+                    This menu gives you the full traceability of inventory
+                    operations on a specific product. You can filter on the product
+                    to see all the past or future movements for the product.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

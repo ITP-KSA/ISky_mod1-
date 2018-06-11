@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="account_invoice_lines_form_view" model="ir.ui.view">
+            <field name="name">account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='name']" position="after">
+                    <field name="line_item"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account_invoice_line" model="ir.ui.view">
+            <field name="name">account.invoice.line</field>
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <tree string="Invoice Products" create="false">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="uom_id"/>
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <field name="quantity" sum="Total"/>
+                    <field name="discount" sum="Total"/>
+                    <field name="price_unit" sum="Total"/>
+                    <field name="price_subtotal" sum="Total"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="account_invoice_line_grouped" model="ir.ui.view">
+            <field name="name">account.invoice.line.grouped</field>
+            <field name="model">account.invoice.line</field>
+            <field name="arch" type="xml">
+                <search string="invoice">
+                    <field name="product_part"/>
+                    <field name="product_mfr"/>
+                    <field name="product_mfr_name"/>
+                    <field name="product_material_code"/>
+                    <field name="product_smacc_code"/>
+                    <field name="product_samj_code"/>
+                    <group expand="1" string="Group By">
+                        <filter string="Invoice" context="{'group_by':'invoice_id'}" name='group_by_invoice_id'/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="account_invoice_line_action">
+            <field name="name">Invoiced Products</field>
+            <field name="res_model">account.invoice.line</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="account_invoice_line"/>
+            <field name="domain">[('product_id','!=',False)]</field>
+            <field name="context">{'search_default_group_by_invoice_id':1}</field>
+        </record>
+    </data>
+</odoo>
