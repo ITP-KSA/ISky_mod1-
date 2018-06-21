@@ -27,7 +27,7 @@ class SaleOrder(models.Model):
 
     @api.model
     def create(self, vals):
-        if vals['special_sale'] and not vals['project_id']:
+        if vals.get('special_sale') and not vals.get('project_id'):
             raise ValidationError("Please select project")
         return super(SaleOrder, self).create(vals)
 

@@ -2,18 +2,28 @@
 <odoo>
     <data>
 
-        <record id="stock.stock_warehouse_comp_rule" model="ir.rule">
-          <field name="active" eval="False"/>
-        </record>
+        <!--<record id="stock.stock_warehouse_comp_rule" model="ir.rule">-->
+          <!--<field name="active" eval="False"/>-->
+        <!--</record>-->
 
         <record id="stock_warehouse_user_new_rule" model="ir.rule">
             <field name="name">Stock Warehouse Rule</field>
             <field name="model_id" ref="stock.model_stock_warehouse"/>
-            <field name="groups" eval="[(4, ref('stock.group_stock_manager'))]"/>
+            <!--<field name="groups" eval="[(4, ref('stock.group_stock_manager'))]"/>-->
             <field name="domain_force">
-                ['|',('id','in',[p for p in user.warehouse_ids.ids]),('id','=',False)]
+                [('id','in',user.warehouse_ids.ids)]
             </field>
         </record>
+
+        <record id="stock_picking_type_new_rule" model="ir.rule">
+            <field name="name">Stock Picking Type</field>
+            <field name="model_id" ref="stock.model_stock_picking_type"/>
+            <field name="domain_force">
+                [('warehouse_id','in',user.warehouse_ids.ids)]
+            </field>
+        </record>
+
+
 
     </data>
 </odoo>

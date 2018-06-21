@@ -9,7 +9,7 @@
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="special_sale" attrs="{'readonly': [('state', 'not in', ['draft','sent'])]}"/>
                     <field name="project_id"
-                           attrs="{'invisible':[('special_sale', '=', False)], 'readonly': [('state', 'not in', ['draft','sent'])]}"/>
+                           attrs="{'required':[('special_sale', '=', True)],'invisible':[('special_sale', '=', False)], 'readonly': [('state', 'not in', ['draft','sent'])]}"/>
                     <field name="rfq_num"/>
                 </xpath>
 

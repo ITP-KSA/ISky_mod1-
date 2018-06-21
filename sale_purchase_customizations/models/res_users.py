@@ -8,3 +8,10 @@ class ResUsers(models.Model):
 
 
     warehouse_ids = fields.Many2many("stock.warehouse", string="Warehouses")
+
+
+    @api.onchange('company_id','company_ids')
+    def onchange_company_ids(self):
+        for rec in self:
+            if rec.company_id or rec.company_ids:
+                rec.warehouse_ids = ''

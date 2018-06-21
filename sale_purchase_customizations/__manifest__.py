@@ -31,7 +31,6 @@ Add customizations to Sale and Purchase cycles.
         'views/purchase_order_lines_tree.xml',
         'views/stock_move_tree.xml',
         'views/sale_order_view.xml',
-        'views/account_invoice_view.xml',
         'views/stock_picking_view.xml',
         'views/custom_external_layout.xml',
         'views/report_quotation.xml',

@@ -7,6 +7,10 @@
                 <strong>Client's P.O:</strong>
                 <p t-field="doc.client_po"/>
             </div>
+            <div class="col-xs-2" t-if="doc.rfq_num">
+                <strong>RFQ:</strong>
+                <p t-field="doc.rfq_num"/>
+            </div>
         </xpath>
     </template>
 </odoo>

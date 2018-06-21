@@ -44,6 +44,10 @@
                                 <strong>Due Date:</strong>
                                 <p t-field="o.date_due"/>
                             </div>
+                             <div class="col-xs-2" t-if="o.rfq_num">
+                                <strong>RFQ:</strong>
+                                <p t-field="o.rfq_num"/>
+                            </div>
                             <div class="col-xs-2" t-if="o.origin">
                                 <strong>Source:</strong>
                                 <p t-field="o.origin"/>
@@ -187,7 +191,7 @@
         <report
                 id="mawaten_aljoudwiht_invoice"
                 model="account.invoice"
-                string="Mawaten Al-joudwiht Invoice"
+                string="Mawaten Al Joud Report"
                 report_type="qweb-pdf"
                 name="sale_purchase_customizations.report_invoice_mawaten_aljoudwiht"
                 file="sale_purchase_customizations.report_invoice_mawaten_aljoudwiht"

@@ -11,5 +11,6 @@ class InvLines(models.Model):
     product_smacc_code = fields.Char(string="SMACC Code", related="product_id.product_smacc_code")
     product_samj_code = fields.Char(string="SAMJ Code", related="product_id.product_samj_code")
 
-    line_item = fields.Char("Line Item #")
+    line_item = fields.Integer(string="Line Item #",help="Shows the sequence of this line in the "
+                              " sale order.", default=9999)
 

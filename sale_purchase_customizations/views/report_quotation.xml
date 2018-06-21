@@ -66,6 +66,11 @@
                                 <strong>Salesperson:</strong>
                                 <p t-field="doc.user_id"/>
                             </div>
+                            <div t-if="doc.rfq_num" class="col-xs-3">
+                                <strong>RFQ:</strong>
+                                <p t-field="doc.rfq_num"/>
+                            </div>
+
                             <div name="payment_term" t-if="doc.payment_term_id" class="col-xs-3">
                                 <strong>Payment Terms:</strong>
                                 <p t-field="doc.payment_term_id"/>
@@ -242,7 +247,7 @@
         <report
                 id="mawaten_aljoudwiht_quotation"
                 model="sale.order"
-                string="Mawaten Al-joudwiht Quotation"
+                string="Mawaten Al Joud Report"
                 report_type="qweb-pdf"
                 name="sale_purchase_customizations.report_saleorder_mawaten_aljoudwiht"
                 file="sale_purchase_customizations.report_saleorder_mawaten_aljoudwiht"
