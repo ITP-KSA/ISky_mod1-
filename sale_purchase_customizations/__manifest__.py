@@ -22,10 +22,10 @@ Add customizations to Sale and Purchase cycles.
         'sale_timesheet',
     ],
     'data': [
-        'security/security.xml',
+        # 'security/security.xml',
         'views/project_views.xml',
         'views/product_views.xml',
-        'views/res_users_views.xml',
+        # 'views/res_users_views.xml',
         'views/sale_order_line_tree.xml',
         'views/account_invoice_lines_tree.xml',
         'views/purchase_order_lines_tree.xml',

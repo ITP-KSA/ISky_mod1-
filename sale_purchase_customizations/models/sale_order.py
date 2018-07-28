@@ -12,7 +12,8 @@ class SaleOrderLine(models.Model):
 
     badge_number = fields.Text(string="Badge Number")
     contact_info = fields.Text(string="Contact Info")
-    special_sale = fields.Boolean(string="Special Sale", related='order_id.special_sale', store=True)
+    special_sale = fields.Boolean(
+        string="Special Sale", related='order_id.special_sale', store=True)
 
 
 class SaleOrder(models.Model):
@@ -22,8 +23,6 @@ class SaleOrder(models.Model):
     client_po = fields.Char(string="Client's P.O")
     project_id = fields.Many2one('project.project')
     rfq_num = fields.Char("RFQ#")
-
-
 
     @api.model
     def create(self, vals):
@@ -39,17 +38,22 @@ class SaleOrder(models.Model):
         '''
         errors = []
         for line in self.order_line:
-            if line.product_id.type in ('consu', 'product') and float_compare(line.product_id.qty_available,
-                                                                              line.product_uom_qty,
-                                                                              line.product_uom.rounding) < 0:
+            if line.product_id.type in ('consu', 'product') and \
+                float_compare(line.product_id.qty_available,
+                              line.product_uom_qty,
+                              line.product_uom.rounding) < 0:
                 if not line.order_id.procurement_group_id:
-                    line.order_id.procurement_group_id = self.env['procurement.group'].create({
-                        'name': line.order_id.name, 'move_type': line.order_id.picking_policy,
+                    prc_grp = self.env['procurement.group']
+                    line.order_id.procurement_group_id = prc_grp.create({
+                        'name': line.order_id.name,
+                        'move_type': line.order_id.picking_policy,
                         'sale_id': line.order_id.id,
                         'partner_id': line.order_id.partner_shipping_id.id,
                     })
-                values = line._prepare_procurement_values(group_id=line.order_id.procurement_group_id)
-                values.setdefault('company_id', self.env['res.company']._company_default_get('procurement.group'))
+                values = line._prepare_procurement_values(
+                    group_id=line.order_id.procurement_group_id)
+                values.setdefault('company_id', self.env['res.company'].
+                                  _company_default_get('procurement.group'))
                 values.setdefault('priority', '1')
                 values.setdefault('date_planned', fields.Datetime.now())
 
@@ -58,19 +62,29 @@ class SaleOrder(models.Model):
 
                 # get dest location
                 type_obj = self.env['stock.picking.type']
-                company_id = self.env.context.get('company_id') or self.env.user.company_id.id
-                types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id.company_id', '=', company_id)])
+                company_id = self.env.context.get(
+                    'company_id') or self.env.user.company_id.id
+                types = type_obj.search(
+                    [('code', '=', 'incoming'),
+                     ('warehouse_id.company_id', '=', company_id)])
                 if not types:
-                    types = type_obj.search([('code', '=', 'incoming'), ('warehouse_id', '=', False)])
+                    types = type_obj.search(
+                        [('code', '=', 'incoming'),
+                         ('warehouse_id', '=', False)])
                 location_id = types[:1].default_location_dest_id
 
-                rule = line.order_id.procurement_group_id._get_rule(line.product_id, location_id, values)
+                rule = line.order_id.procurement_group_id._get_rule(
+                    line.product_id, location_id, values)
                 if not rule:
-                    raise UserError(_('No procurement rule found. Please verify the configuration of your routes'))
+                    raise UserError(
+                        _('''No procurement rule found.
+                            Please verify the configuration of your routes'''))
 
-                qty_to_purchase = line.product_uom_qty - line.product_id.qty_available
+                qty_to_purchase = line.product_uom_qty - \
+                    line.product_id.qty_available
                 try:
-                    rule._run_buy(line.product_id, qty_to_purchase, line.product_uom, location_id, line.name,
+                    rule._run_buy(line.product_id, qty_to_purchase,
+                                  line.product_uom, location_id, line.name,
                                   line.order_id.name, values)
                 except UserError as error:
                     errors.append(error.name)
@@ -84,7 +98,8 @@ class SaleOrder(models.Model):
         parent = False
         project = False
         if self.special_sale:
-            # Step#1: Add Client PO as task in the project already selected by the user
+            # Step#1: Add Client PO as task in the project already selected by
+            # the user
             task = self.env['project.task'].sudo().create({
                 'name': self.client_po,
                 'project_id': self.project_id.id,
@@ -102,7 +117,8 @@ class SaleOrder(models.Model):
                 'rfq_num': self.rfq_num,
             })
             project.task_ids = False
-        # Step#2: For each line in the order lines (having service products) create a task in the above created project
+        # Step#2: For each line in the order lines (having service products)
+        # create a task in the above created project
         for line in self.order_line:
             task = self.env['project.task'].sudo().create({
                 'name': line.product_id.name,

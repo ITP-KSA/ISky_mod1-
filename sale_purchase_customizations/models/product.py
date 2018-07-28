@@ -9,7 +9,8 @@ class ProductProduct(models.Model):
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         args = args or []
-        domain = ['|', ('default_code', operator, name), ('name', operator, name),
+        domain = ['|', ('default_code', operator, name),
+                  ('name', operator, name),
                   ('product_part', operator, name),
                   ('product_mfr', operator, name),
                   ('product_mfr_name', operator, name),

@@ -9,7 +9,7 @@
                 <xpath expr="//page[@name='access_rights']/group" position="after">
                     <group string="Allowed Warehouses">
                         <field name="warehouse_ids" widget="many2many_tags"
-                               domain="['|','|','|',('company_id','=',company_id),('company_id','child_of',company_id),('company_id','child_of',company_ids),('company_id','in',company_ids)]"/>
+                               domain="['|',('company_id','=',company_id),('company_id','in',company_ids)]"/>
                     </group>
                 </xpath>
             </field>
