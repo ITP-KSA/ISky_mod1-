@@ -112,7 +112,7 @@ class SaleOrder(models.Model):
                 client_po = self.client_po
             else:
                 client_po = ''
-            project = self.env['project.project'].create({
+            project = self.env['project.project'].sudo().create({
                 'name': client_po + "-" + self.name,
                 'rfq_num': self.rfq_num,
             })
