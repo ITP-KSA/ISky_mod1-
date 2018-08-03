@@ -50,7 +50,8 @@ class SaleOrder(models.Model):
                 'product_sample.product_sample_data_email')
             ctx = self.env.context.copy()
             message = '''It's time to receive back sample %s.
-                        Would you please check with customer?'''% sale_rec.name
+                        Would you please check
+                        with customer?''' % sale_rec.name
             ctx.update({'body': message,
                         'email_to': sale_rec.user_id.partner_id.email,
                         'email_from': admin_user_rec.partner_id.email
