@@ -52,8 +52,8 @@ class SaleOrder(models.Model):
             message = '''It's time to receive back sample %s.
                         Would you please check with customer?'''% sale_rec.name
             ctx.update({'body': message,
-                        'email_to': sale_rec.user_id.email,
-                        'email_from': admin_user_rec.email
+                        'email_to': sale_rec.user_id.partner_id.email,
+                        'email_from': admin_user_rec.partner_id.email
                         })
             template.with_context(ctx).send_mail(
                 sale_rec.id, force_send=True)
