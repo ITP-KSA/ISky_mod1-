@@ -58,3 +58,20 @@ class SaleOrder(models.Model):
                         })
             template.with_context(ctx).send_mail(
                 sale_rec.id, force_send=True)
+
+    @api.model
+    def create(self, vals):
+        sequence_ps_rec = self.env['ir.sequence'].search(
+            [('code', '=', 'sale.order'),
+             ('name', '=', 'Sale Order Product Sample')])
+        if vals.get('sample'):
+            self.env.cr.execute(
+                "update ir_sequence set active = 'f' where code='sale.order' and name='Sales Order'")
+            self.env.cr.execute(
+                "update ir_sequence set active = 't' where code='sale.order' and name='Sale Order Product Sample'")
+        else:
+            self.env.cr.execute(
+                "update ir_sequence set active = 'f' where code='sale.order' and name='Sale Order Product Sample'")
+            self.env.cr.execute(
+                "update ir_sequence set active = 't' where code='sale.order' and name='Sales Order'")
+        return super(SaleOrder, self).create(vals)
