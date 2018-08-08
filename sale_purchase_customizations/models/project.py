@@ -6,18 +6,18 @@ class projectProjectInh(models.Model):
 
     rfq_num = fields.Char("RFQ#")
     privacy_visibility = fields.Selection([
-            ('followers', _('On invitation only')),
-            ('employees', _('Visible by all employees')),
-            ('portal', _('Visible by following customers')),
-        ],
+        ('followers', _('On invitation only')),
+        ('employees', _('Visible by all employees')),
+        ('portal', _('Visible by following customers')),
+    ],
         string='Privacy', required=True,
         default='followers',
         help="Holds visibility of the tasks or issues that belong to the current project:\n"
-                "- On invitation only: Employees may only see the followed project, tasks or issues\n"
-                "- Visible by all employees: Employees may see all project, tasks or issues\n"
-                "- Visible by following customers: employees see everything;\n"
-                "   if website is activated, portal users may see project, tasks or issues followed by\n"
-                "   them or by someone of their company\n")
+        "- On invitation only: Employees may only see the followed project, tasks or issues\n"
+        "- Visible by all employees: Employees may see all project, tasks or issues\n"
+        "- Visible by following customers: employees see everything;\n"
+        "   if website is activated, portal users may see project, tasks or issues followed by\n"
+        "   them or by someone of their company\n")
 
 
 class projectTaskInh(models.Model):
@@ -26,7 +26,7 @@ class projectTaskInh(models.Model):
     badge_number = fields.Text(string="Badge Number", auto_join=True)
     contact_info = fields.Text(string="Contact Info", auto_join=True)
     special_sale = fields.Boolean(string="Special Sale", auto_join=True)
-    
+    sale_order_id = fields.Many2one('sale.order', string="Sale Order")
     line_item = fields.Char("Line Item #")
 
     @api.model

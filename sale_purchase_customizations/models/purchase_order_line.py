@@ -15,3 +15,9 @@ class PurchaseOrderLines(models.Model):
         string="SMACC Code", related="product_id.product_smacc_code")
     product_samj_code = fields.Char(
         string="SAMJ Code", related="product_id.product_samj_code")
+
+
+# class PurchaseOrder(models.Model):
+#     _inherit = 'purchase.order'
+
+#     sale_order_id = fields.Many2one('sale.order', string="Sale Order")

@@ -114,6 +114,7 @@ class SaleOrder(models.Model):
             task = self.env['project.task'].sudo().create({
                 'name': self.partner_id.name + "-" + rfq_num,
                 'project_id': self.project_id.id,
+                'sale_order_id': self.id,
             })
             parent = task.id
             project = self.project_id
@@ -139,7 +140,7 @@ class SaleOrder(models.Model):
                 'contact_info': line.contact_info,
                 'badge_number': line.badge_number,
                 'special_sale': line.special_sale,
-                'line_item': line.line_item,
+                'line_item': line.line_item
             })
 
             task.sale_line_id = line.id,
@@ -175,3 +176,16 @@ class SaleOrder(models.Model):
             order.check_before_confirm()
             order.action_confirm()
         return True
+
+    @api.multi
+    def write(self, vals):
+        res = super(SaleOrder, self).write(vals)
+        for order in self:
+            task_rec = self.env['project.task'].search(
+                [('sale_order_id', '=', order.id)])
+            client_po = ''
+            if order.client_po:
+                client_po = order.client_po
+            name = order.partner_id.name + "-" + client_po
+            task_rec.write({'name': name})
+        return res
