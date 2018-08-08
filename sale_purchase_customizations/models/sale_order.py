@@ -108,8 +108,11 @@ class SaleOrder(models.Model):
         if self.special_sale:
             # Step#1: Add Client PO as task in the project already selected by
             # the user
+            rfq_num = self.rfq_num
+            if not self.rfq_num:
+                rfq_num = ''
             task = self.env['project.task'].sudo().create({
-                'name': self.client_po,
+                'name': self.partner_id.name + "-" + rfq_num,
                 'project_id': self.project_id.id,
             })
             parent = task.id
@@ -144,7 +147,7 @@ class SaleOrder(models.Model):
     @api.multi
     def action_confirm(self):
         for order in self:
-            order.client_po = order.rfq_num
+            order.write({'client_po': order.rfq_num})
             status = self.env.user.has_group('sales_team.group_sale_manager')
             res = super(SaleOrder, order).action_confirm()
             order.check_product_qty_available()
