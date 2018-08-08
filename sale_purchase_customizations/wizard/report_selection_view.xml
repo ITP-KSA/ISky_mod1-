@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="form_view_report_selection" model="ir.ui.view">
+        <field name="model">report.selection</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <button name="print_ai_joud_quo_report" type="object" string="Quotation Mawaten AI Joud Report" class="btn btn-primary"/>
+                        </group>
+                        <group>
+                            <button name="print_quotation_report" type="object" string="Quotation Report" class="btn btn-primary"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_or_invoice" model="ir.actions.act_window">
+        <field name="name">Sale Or Invoice</field>
+        <field name="res_model">report.selection</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -19,10 +19,19 @@ class SaleOrderLine(models.Model):
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    special_sale = fields.Boolean(string="Special Sale")
+    special_sale = fields.Boolean(string="Special Sale", default=True)
     client_po = fields.Char(string="Client's P.O")
     project_id = fields.Many2one('project.project')
     rfq_num = fields.Char("RFQ#")
+    state = fields.Selection([
+        ('draft', 'Quotation'),
+        ('sent', 'Quotation Sent'),
+        ('sale', 'Sales Order'),
+        ('done', 'Locked'),
+        ('cancel', 'Cancelled'),
+        ('approve', 'To Approve')
+    ], string='Status', readonly=True, copy=False, index=True,
+        track_visibility='onchange', default='draft')
 
     @api.model
     def create(self, vals):
@@ -72,7 +81,6 @@ class SaleOrder(models.Model):
                         [('code', '=', 'incoming'),
                          ('warehouse_id', '=', False)])
                 location_id = types[:1].default_location_dest_id
-
                 rule = line.order_id.procurement_group_id._get_rule(
                     line.product_id, location_id, values)
                 if not rule:
@@ -136,10 +144,16 @@ class SaleOrder(models.Model):
     @api.multi
     def action_confirm(self):
         for order in self:
-            order.check_before_confirm()
+            order.client_po = order.rfq_num
+            status = self.env.user.has_group('sales_team.group_sale_manager')
             res = super(SaleOrder, order).action_confirm()
             order.check_product_qty_available()
             if res:
+                if not status:
+                    if order.state in ['sale', 'sent']:
+                        order.state = 'approve'
+                if status:
+                    order.check_before_confirm()
                 for picking in order.picking_ids:
                     if not picking.client_po:
                         picking.client_po = order.client_po
@@ -151,3 +165,10 @@ class SaleOrder(models.Model):
         res['client_po'] = self.client_po
         res['rfq_num'] = self.rfq_num
         return res
+
+    @api.multi
+    def action_approve_quotation(self):
+        for order in self:
+            order.check_before_confirm()
+            order.action_confirm()
+        return True

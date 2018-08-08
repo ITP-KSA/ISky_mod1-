@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <record id="product_template_inherit" model="ir.ui.view">
             <field name="name">product template</field>
@@ -33,6 +33,20 @@
             </field>
         </record>
 
-
+        <record id="product_template_form_view_inherit" model="ir.ui.view">
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <field name="list_price" position="attributes">
+                    <attribute name="groups">base.group_erp_manager</attribute>
+                </field>
+                <label for="standard_price" position="attributes">
+                    <attribute name="groups">base.group_erp_manager</attribute>
+                </label>
+                <field name="standard_price" position="attributes">
+                    <attribute name="groups">base.group_erp_manager</attribute>
+                </field>
+            </field>
+        </record>
     </data>
-</openerp>
+</odoo>

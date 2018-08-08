@@ -251,6 +251,7 @@
                 report_type="qweb-pdf"
                 name="sale_purchase_customizations.report_saleorder_mawaten_aljoudwiht"
                 file="sale_purchase_customizations.report_saleorder_mawaten_aljoudwiht"
-                print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"/>
+                print_report_name="(object.state in ('draft', 'sent') and 'Quotation - %s' % (object.name)) or 'Order - %s' % (object.name)"
+                paperformat="sale_purchase_customizations.paperformat_quotation"/>
     </data>
 </odoo>
