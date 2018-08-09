@@ -3,11 +3,11 @@
     <!-- Inherit quotation report (from module sale) -->
     <template id="report_saleorder_document_inherit_client_po" inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[@class='row mt32 mb32']" position="inside">
-            <div t-if="doc.client_po and doc.state != 'draft'" class="col-xs-3">
+            <div t-if="doc.client_po and doc.state not in ['draft','sent']" class="col-xs-3">
                 <strong>Client's P.O:</strong>
                 <p t-field="doc.client_po"/>
             </div>
-            <div class="col-xs-2" t-if="doc.rfq_num and doc.state == 'draft'">
+            <div class="col-xs-2" t-if="doc.rfq_num and doc.state in ['draft', 'sent']">
                 <strong>RFQ:</strong>
                 <p t-field="doc.rfq_num"/>
             </div>

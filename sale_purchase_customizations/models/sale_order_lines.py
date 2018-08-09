@@ -26,6 +26,10 @@ class SalesOrderLines(models.Model):
     ]
 
     @api.multi
+    def name_get(self):
+        return [(value.id, "%s - %s - %s" % (value.order_id.name, value.order_id.product_id.name, value.product_uom_qty)) for value in self]
+
+    @api.multi
     def _prepare_invoice_line(self, qty):
         res = super(SalesOrderLines, self)._prepare_invoice_line(qty)
         res.update({'line_item': self.line_item})

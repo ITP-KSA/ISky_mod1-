@@ -15,7 +15,7 @@
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="project_id"
                            attrs="{'required':[('special_sale', '=', True)],'invisible':[('special_sale', '=', False)], 'readonly': [('state', 'not in', ['draft','sent'])]}"/>
-                    <field name="rfq_num" attrs="{'invisible': [('state', 'not in', 'draft')]}"/>
+                    <field name="rfq_num" attrs="{'invisible': [('state', 'not in', ['draft','sent'])]}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
@@ -36,7 +36,7 @@
                     <field name="special_sale" attrs="{'readonly': [('state', 'not in', ['draft','sent'])]}"/>
                 </field>
                 <xpath expr="//field[@name='payment_term_id']" position="after">
-                    <field name="client_po" attrs="{'readonly': [('state', 'in', ['done'])], 'invisible': [('state', 'in', 'draft')]}"/>
+                    <field name="client_po" attrs="{'readonly': [('state', 'in', ['done'])], 'invisible': [('state', 'in', ['draft','sent'])]}"/>
                 </xpath>
                 <xpath expr="//button[@name='print_quotation' and @states='draft']" position="attributes">
                     <attribute name="type">action</attribute>
