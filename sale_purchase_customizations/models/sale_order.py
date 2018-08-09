@@ -114,6 +114,7 @@ class SaleOrder(models.Model):
                 'name': self.partner_id.name + "-" + rfq_num,
                 'project_id': self.project_id.id,
                 'sale_order_id': self.id,
+                'partner_id': self.partner_id.id
             })
             parent = task.id
             project = self.project_id
