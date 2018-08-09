@@ -29,6 +29,7 @@ Add customizations to Sale and Purchase cycles.
         'reports/quotation_paper_format.xml',
         # 'views/res_users_views.xml',
         'views/sale_order_line_tree.xml',
+        'views/account_invoice_view.xml',
         'views/account_invoice_lines_tree.xml',
         'views/purchase_order_lines_tree.xml',
         'views/stock_move_tree.xml',

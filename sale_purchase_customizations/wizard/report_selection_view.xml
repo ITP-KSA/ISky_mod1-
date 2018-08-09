@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <!-- This form view display in Quotation -->
     <record id="form_view_report_selection" model="ir.ui.view">
         <field name="model">report.selection</field>
         <field name="arch" type="xml">
@@ -21,11 +22,47 @@
         </field>
     </record>
 
+    <!-- This form view display in invoice -->
+    <record id="invoice_report_selection" model="ir.ui.view">
+        <field name="model">report.selection</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <button name="print_ai_joud_inv_report" type="object" string="Invoice Mawaten AI Joud Report" class="btn btn-primary"/>
+                        </group>
+                        <group>
+                            <button name="print_invoice_report" type="object" string="Invoice Report" class="btn btn-primary"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Quotation print button action -->
     <record id="action_sale_or_invoice" model="ir.actions.act_window">
-        <field name="name">Sale Or Invoice</field>
+        <field name="name">Sale Reports</field>
         <field name="res_model">report.selection</field>
         <field name="view_type">form</field>
         <field name="view_mode">form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('form_view_report_selection')})]"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Invoice print button action -->
+    <record id="action_invoice_reports" model="ir.actions.act_window">
+        <field name="name">Invoice Reports</field>
+        <field name="res_model">report.selection</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('invoice_report_selection')})]"/>
         <field name="target">new</field>
     </record>
 </odoo>

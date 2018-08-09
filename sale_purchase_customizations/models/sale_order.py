@@ -68,7 +68,6 @@ class SaleOrder(models.Model):
 
                 # keep dest address empty to deliver to your own company
                 values.update({'partner_dest_id': False})
-
                 # get dest location
                 type_obj = self.env['stock.picking.type']
                 company_id = self.env.context.get(
@@ -132,7 +131,7 @@ class SaleOrder(models.Model):
         # Step#2: For each line in the order lines (having service products)
         # create a task in the above created project
         for line in self.order_line:
-            task = self.env['project.task'].sudo().create({
+            sub_task = self.env['project.task'].sudo().create({
                 'name': line.product_id.name,
                 'project_id': project.id,
                 'partner_id': self.partner_id.id,
@@ -143,7 +142,7 @@ class SaleOrder(models.Model):
                 'line_item': line.line_item
             })
 
-            task.sale_line_id = line.id,
+            sub_task.sale_line_id = line.id
 
     @api.multi
     def action_confirm(self):
@@ -173,7 +172,6 @@ class SaleOrder(models.Model):
     @api.multi
     def action_approve_quotation(self):
         for order in self:
-            order.check_before_confirm()
             order.action_confirm()
         return True
 
