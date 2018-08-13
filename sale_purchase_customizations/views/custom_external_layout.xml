@@ -8,9 +8,20 @@
                 <img src="/sale_purchase_customizations/static/src/img/mawaten_aljoudwiht.jpeg"
                      style="max-height: 90px;"/>
             </xpath>
-
             <xpath expr="//span[@t-field='company.partner_id']" position="before">
                 <h5 style="margin-bottom:-2px;">MAWATIN AL JOUD</h5>
+            </xpath>
+            <xpath expr="//span[@t-field='company.partner_id']" position="replace">
+                <span t-field="company.partner_id"
+                        t-field-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'
+                        style="border-bottom: 1px solid black; display:inline-block;"/>
+            </xpath>
+
+            <xpath expr="//div[@class='footer']/div/ul/li[@t-if='company.email']" position="replace">
+                <li>Email: <span>info@mawatinaljoud.com</span></li>
+            </xpath>
+            <xpath expr="//div[@class='footer']/div/ul/li[@t-if='company.website']" position="replace">
+                <li>Web: <span>mawatinaljoud.com</span></li>
             </xpath>
         </template>
 
