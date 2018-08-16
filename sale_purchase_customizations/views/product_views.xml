@@ -11,8 +11,6 @@
                     <field name="product_mfr"/>
                     <field name="product_mfr_name"/>
                     <field name="product_material_code"/>
-                    <field name="product_smacc_code"/>
-                    <field name="product_samj_code"/>
                 </xpath>
             </field>
         </record>

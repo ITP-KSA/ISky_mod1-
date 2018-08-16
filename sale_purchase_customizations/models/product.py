@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 
 class ProductProduct(models.Model):
@@ -23,6 +24,25 @@ class ProductProduct(models.Model):
         recs = self.search(domain + args, limit=limit)
         return recs.name_get()
 
+    product_smacc_code = fields.Char(string="SMACC Code")
+    product_samj_code = fields.Char(string="SAMJ Code")
+
+    @api.constrains('product_smacc_code')
+    def _unquie_smacc_code(self):
+        product_ids = len(self.search(
+            [('product_smacc_code', '=', self.product_smacc_code)]))
+        if product_ids > 1 and self.product_smacc_code:
+            raise UserError("The SMACC CODE must be unique!")
+        return True
+
+    @api.constrains('product_samj_code')
+    def _unquie_product_samj_code(self):
+        product_ids = len(self.search(
+            [('product_samj_code', '=', self.product_samj_code)]))
+        if product_ids > 1 and self.product_samj_code:
+            raise UserError("The SAMJ CODE must be unique!")
+        return True
+
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -31,5 +51,3 @@ class ProductTemplate(models.Model):
     product_mfr = fields.Char(string="MFR")
     product_mfr_name = fields.Char(string="MFR Name")
     product_material_code = fields.Char(string="Material Code")
-    product_smacc_code = fields.Char(string="SMACC Code")
-    product_samj_code = fields.Char(string="SAMJ Code")

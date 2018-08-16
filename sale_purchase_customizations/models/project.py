@@ -12,12 +12,13 @@ class projectProjectInh(models.Model):
     ],
         string='Privacy', required=True,
         default='followers',
-        help="Holds visibility of the tasks or issues that belong to the current project:\n"
-        "- On invitation only: Employees may only see the followed project, tasks or issues\n"
-        "- Visible by all employees: Employees may see all project, tasks or issues\n"
-        "- Visible by following customers: employees see everything;\n"
-        "   if website is activated, portal users may see project, tasks or issues followed by\n"
-        "   them or by someone of their company\n")
+        help='''Holds visibility of the tasks or issues that belong to the
+        current project:\n- On invitation only: Employees may only see the
+        followed project, tasks or issues\n- Visible by all employees:
+        Employees may see all project, tasks or issues\n- Visible by
+        following customers: employees see everything;\nif website is
+        activated, portal users may see project, tasks or issues followed by\n
+        them or by someone of their company\n''')
 
 
 class projectTaskInh(models.Model):
@@ -28,6 +29,8 @@ class projectTaskInh(models.Model):
     special_sale = fields.Boolean(string="Special Sale", auto_join=True)
     sale_order_id = fields.Many2one('sale.order', string="Sale Order")
     line_item = fields.Char("Line Item #")
+    quantity = fields.Float(string="Quantity",
+                            related="sale_line_id.product_uom_qty")
 
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):

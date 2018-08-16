@@ -25,9 +25,9 @@ class SalesOrderLines(models.Model):
          'Line Item # must be unique per order!')
     ]
 
-    @api.multi
-    def name_get(self):
-        return [(value.id, "%s - %s - %s" % (value.order_id.name, value.order_id.product_id.name, value.product_uom_qty)) for value in self]
+    # @api.multi
+    # def name_get(self):
+    #     return [(value.id, "%s - %s - %s" % (value.order_id.name, value.order_id.product_id.name, value.product_uom_qty)) for value in self]
 
     @api.multi
     def _prepare_invoice_line(self, qty):

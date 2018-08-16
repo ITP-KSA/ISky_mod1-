@@ -10,4 +10,5 @@ from . import stock_move
 from . import account_invoice
 from . import stock_picking
 from . import config_settings
+from . import inventory_line
 # from . import res_users
