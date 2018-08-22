@@ -47,7 +47,7 @@ class SaleOrder(models.Model):
         '''
         errors = []
         for line in self.order_line:
-            if line.product_id.type in ('consu', 'product') and \
+            if line.product_id.type in ('product') and \
                 float_compare(line.product_id.qty_available,
                               line.product_uom_qty,
                               line.product_uom.rounding) < 0:
@@ -61,25 +61,27 @@ class SaleOrder(models.Model):
                     })
                 values = line._prepare_procurement_values(
                     group_id=line.order_id.procurement_group_id)
+
+                exception_moves = self.env['stock.move'].search(
+                    [('procure_method', '=', 'make_to_order'),
+                     ('move_orig_ids', '=', False),
+                     ('product_id', '=', line.product_id.id),
+                     ('state', 'not in', ('cancel', 'done', 'draft'))])
+                reserved_product_quantity = sum(
+                    [exception_move.product_uom_qty for exception_move in exception_moves])
+                qty_to_purchase = line.product_uom_qty - \
+                    line.product_id.qty_available - reserved_product_quantity
+                rule = self.env['procurement.rule']
+
+                location_id = line.order_id.partner_shipping_id.property_stock_customer
+
                 values.setdefault('company_id', self.env['res.company'].
                                   _company_default_get('procurement.group'))
                 values.setdefault('priority', '1')
                 values.setdefault('date_planned', fields.Datetime.now())
 
-                # keep dest address empty to deliver to your own company
+                # # keep dest address empty to deliver to your own company
                 values.update({'partner_dest_id': False})
-                # get dest location
-                type_obj = self.env['stock.picking.type']
-                company_id = self.env.context.get(
-                    'company_id') or self.env.user.company_id.id
-                types = type_obj.search(
-                    [('code', '=', 'incoming'),
-                     ('warehouse_id.company_id', '=', company_id)])
-                if not types:
-                    types = type_obj.search(
-                        [('code', '=', 'incoming'),
-                         ('warehouse_id', '=', False)])
-                location_id = types[:1].default_location_dest_id
                 rule = line.order_id.procurement_group_id._get_rule(
                     line.product_id, location_id, values)
                 if not rule:
@@ -87,16 +89,34 @@ class SaleOrder(models.Model):
                         _('''No procurement rule found.
                             Please verify the configuration of your routes'''))
 
-                qty_to_purchase = line.product_uom_qty - \
-                    line.product_id.qty_available
-                try:
-                    rule._run_buy(line.product_id, qty_to_purchase,
-                                  line.product_uom, location_id, line.name,
-                                  line.order_id.name, values)
-                except UserError as error:
-                    errors.append(error.name)
-        if errors:
-            raise UserError('\n'.join(errors))
+                # rule._run_buy(line.product_id, qty_to_purchase,
+                #               line.product_uom, location_id, line.name,
+                #               line.order_id.name, values)
+                self.env['procurement.group'].run(line.product_id, qty_to_purchase, line.product_uom,
+                                                  line.order_id.partner_shipping_id.property_stock_customer, line.name, line.order_id.name, values)
+                # get dest location
+        #         type_obj = self.env['stock.picking.type']
+        #         company_id = self.env.context.get(
+        #             'company_id') or self.env.user.company_id.id
+        #         types = type_obj.search(
+        #             [('code', '=', 'incoming'),
+        #              ('warehouse_id.company_id', '=', company_id)])
+        #         if not types:
+        #             types = type_obj.search(
+        #                 [('code', '=', 'incoming'),
+        #                  ('warehouse_id', '=', False)])
+        #         location_id = exception_moves[:1].location_id
+
+        #         qty_to_purchase = line.product_uom_qty - \
+        #             line.product_id.qty_available
+        #         try:
+        #             rule._run_buy(line.product_id, qty_to_purchase,
+        #                           line.product_uom, location_id, line.name,
+        #                           line.order_id.name, values)
+        #         except UserError as error:
+        #             errors.append(error.name)
+        # if errors:
+        #     raise UserError('\n'.join(errors))
         return True
 
     @api.multi
@@ -150,17 +170,19 @@ class SaleOrder(models.Model):
         for order in self:
             order.write({'client_po': order.rfq_num})
             status = self.env.user.has_group('sales_team.group_sale_manager')
-            res = super(SaleOrder, order).action_confirm()
-            order.check_product_qty_available()
-            if res:
-                if not status:
-                    if order.state in ['sale', 'sent']:
-                        order.state = 'approve'
-                if status:
-                    order.check_before_confirm()
-                for picking in order.picking_ids:
-                    if not picking.client_po:
-                        picking.client_po = order.client_po
+
+            res = super(SaleOrder, order.with_context(
+                temp_data=True)).action_confirm()
+            # order.check_product_qty_available()
+            # if res:
+            #     if not status:
+            #         if order.state in ['sale', 'sent']:
+            #             order.state = 'approve'
+            #     if status:
+            #         order.check_before_confirm()
+            #     for picking in order.picking_ids:
+            #         if not picking.client_po:
+            #             picking.client_po = order.client_po
         return True
 
     @api.multi

@@ -4,6 +4,7 @@ from . import sale_order
 from . import project
 from . import product
 from . import account_invoice_lines
+from . import procurement_rule
 from . import sale_order_lines
 from . import purchase_order_line
 from . import stock_move
