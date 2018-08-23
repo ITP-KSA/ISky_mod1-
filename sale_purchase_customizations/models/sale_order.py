@@ -177,7 +177,11 @@ class SaleOrder(models.Model):
                      ('product_id', '=', line.product_id.id),
                      ('state', 'not in', ('cancel', 'done', 'draft'))])
                 reserved_product_quantity = sum(
-                    [exception_move.product_uom_qty for exception_move in exception_moves])
+                    [exception_move.product_uom_qty
+                     for
+                     exception_move
+                     in
+                     exception_moves])
                 qty_to_purchase = line.product_uom_qty - \
                     line.product_id.qty_available + reserved_product_quantity
                 if qty_to_purchase < 0:
