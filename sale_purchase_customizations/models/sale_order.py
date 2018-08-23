@@ -180,9 +180,9 @@ class SaleOrder(models.Model):
                     [exception_move.product_uom_qty for exception_move in exception_moves])
                 qty_to_purchase = line.product_uom_qty - \
                     line.product_id.qty_available + reserved_product_quantity
-                ctx.update({str(line.product_id.id): qty_to_purchase})
                 if qty_to_purchase < 0:
                     qty_to_purchase = -qty_to_purchase
+                ctx.update({str(line.product_id.id): qty_to_purchase})
             res = super(SaleOrder, order.with_context(ctx)).action_confirm()
             # order.check_product_qty_available()
             if res:

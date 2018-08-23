@@ -20,6 +20,15 @@ class ProcurementRule(models.Model):
                                      values, po, supplier):
         res = super(ProcurementRule, self)._prepare_purchase_order_line(
             product_id, product_qty, product_uom, values, po, supplier)
-        product_qty = self._context.get(str(product_id.id))
+        exception_moves = self.env['stock.move'].search(
+            [('procure_method', '=', 'make_to_stock'),
+             ('product_id', '=', product_id.id),
+             ('state', 'not in', ('cancel', 'done', 'draft'))])
+        reserved_product_quantity = sum(
+            [exception_move.product_uom_qty for exception_move in exception_moves])
+        product_qty = self._context.get(
+            str(product_id.id)) - reserved_product_quantity
+        if product_qty < 0:
+            product_qty = -product_qty
         res.update({'product_qty': product_qty})
         return res
