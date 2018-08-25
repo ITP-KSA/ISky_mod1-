@@ -48,8 +48,8 @@ class ProductProduct(models.Model):
         product_ids = len(self.search(
             [('product_samj_code', '=', self.product_samj_code)]))
         product_temp_ids = len(self.env['product.template'].search(
-            [('product_samj_code', '=', self.product_smacc_code)]))
-        if product_temp_ids and self.product_smacc_code:
+            [('product_samj_code', '=', self.product_samj_code)]))
+        if product_temp_ids and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
         if product_ids > 1 and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
@@ -83,9 +83,9 @@ class ProductTemplate(models.Model):
         product_temp_ids = len(self.search(
             [('product_samj_code', '=', self.product_samj_code)]))
         product_ids = len(self.env['product.product'].search(
-            [('product_samj_code', '=', self.product_smacc_code)]))
+            [('product_samj_code', '=', self.product_samj_code)]))
         if product_temp_ids > 1 and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
-        if product_ids and self.product_smacc_code:
+        if product_ids and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
         return True
