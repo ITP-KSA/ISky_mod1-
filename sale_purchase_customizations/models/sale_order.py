@@ -73,7 +73,7 @@ class SaleOrder(models.Model):
     #                 line.product_id.qty_available - reserved_product_quantity
     #             rule = self.env['procurement.rule']
 
-    #             location_id = line.order_id.partner_shipping_id.property_stock_customer
+    # location_id = line.order_id.partner_shipping_id.property_stock_customer
 
     #             values.setdefault('company_id', self.env['res.company'].
     #                               _company_default_get('procurement.group'))
@@ -87,7 +87,7 @@ class SaleOrder(models.Model):
     #             if not rule:
     #                 raise UserError(
     #                     _('''No procurement rule found.
-    #                         Please verify the configuration of your routes'''))
+    # Please verify the configuration of your routes'''))
 
     #             # rule._run_buy(line.product_id, qty_to_purchase,
     #             #               line.product_uom, location_id, line.name,
@@ -182,13 +182,23 @@ class SaleOrder(models.Model):
                      exception_move
                      in
                      exception_moves])
-                qty_to_purchase = line.product_uom_qty - \
-                    line.product_id.qty_available + reserved_product_quantity
+                qty_to_purchase = False
+                if not reserved_product_quantity:
+                    if line.product_uom_qty > line.product_id.qty_available:
+                        qty_to_purchase = line.product_uom_qty \
+                            - line.product_id.qty_available
+                if reserved_product_quantity:
+                    order_qty = reserved_product_quantity \
+                        + line.product_uom_qty
+                    if order_qty > line.product_id.qty_available:
+                        qty_to_purchase = line.product_uom_qty - \
+                            line.product_id.qty_available + \
+                            reserved_product_quantity
                 if qty_to_purchase < 0:
                     qty_to_purchase = -qty_to_purchase
-                ctx.update({str(line.product_id.id): qty_to_purchase})
+                if qty_to_purchase:
+                    ctx.update({str(line.product_id.id): qty_to_purchase})
             res = super(SaleOrder, order.with_context(ctx)).action_confirm()
-            # order.check_product_qty_available()
             if res:
                 if not status:
                     if order.state in ['sale', 'sent']:
