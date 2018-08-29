@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models
+from odoo import api, models
 
 
 class ProcurementRule(models.Model):
@@ -20,11 +20,16 @@ class ProcurementRule(models.Model):
                                     values, line, partner):
         res = super(ProcurementRule, self)._update_purchase_order_line(
             product_id, product_qty, product_uom, values, line, partner)
-        product_uom = line.product_id.uom_id
-        sale_line_rec = self.env['sale.order.line'].browse(
-            [values.get('sale_line_id')])
-        procurement_uom_po_qty = product_uom._compute_quantity(
-            sale_line_rec.product_uom_qty, product_id.uom_po_id)
-        product_qty = line.product_qty + procurement_uom_po_qty
         res.update({'product_qty': product_qty})
+        return res
+
+    @api.multi
+    def _prepare_purchase_order_line(self, product_id,
+                                     product_qty, product_uom,
+                                     values, po, supplier):
+        res = super(ProcurementRule, self)._prepare_purchase_order_line(
+            product_id, product_qty, product_uom, values, po, supplier)
+        import pdb
+        pdb.set_trace()
+        # res.update({'product_qty': product_qty})
         return res

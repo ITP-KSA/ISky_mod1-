@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models, _
-
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.exceptions import UserError
-from odoo.tools import float_compare
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 
 class SaleOrderLine(models.Model):
@@ -38,86 +36,6 @@ class SaleOrder(models.Model):
         if vals.get('special_sale') and not vals.get('project_id'):
             raise ValidationError("Please select project")
         return super(SaleOrder, self).create(vals)
-
-    # @api.one
-    # def check_product_qty_available(self):
-    #     '''
-    #     Create purchase orders for order lines
-    #     with ordered qty greater than the qty available.
-    #     '''
-    #     errors = []
-    #     for line in self.order_line:
-    #         if line.product_id.type in ('product') and \
-    #             float_compare(line.product_id.qty_available,
-    #                           line.product_uom_qty,
-    #                           line.product_uom.rounding) < 0:
-    #             if not line.order_id.procurement_group_id:
-    #                 prc_grp = self.env['procurement.group']
-    #                 line.order_id.procurement_group_id = prc_grp.create({
-    #                     'name': line.order_id.name,
-    #                     'move_type': line.order_id.picking_policy,
-    #                     'sale_id': line.order_id.id,
-    #                     'partner_id': line.order_id.partner_shipping_id.id,
-    #                 })
-    #             values = line._prepare_procurement_values(
-    #                 group_id=line.order_id.procurement_group_id)
-
-    #             exception_moves = self.env['stock.move'].search(
-    #                 [('procure_method', '=', 'make_to_order'),
-    #                  ('move_orig_ids', '=', False),
-    #                  ('product_id', '=', line.product_id.id),
-    #                  ('state', 'not in', ('cancel', 'done', 'draft'))])
-    #             reserved_product_quantity = sum(
-    #                 [exception_move.product_uom_qty for exception_move in exception_moves])
-    #             qty_to_purchase = line.product_uom_qty - \
-    #                 line.product_id.qty_available - reserved_product_quantity
-    #             rule = self.env['procurement.rule']
-
-    # location_id = line.order_id.partner_shipping_id.property_stock_customer
-
-    #             values.setdefault('company_id', self.env['res.company'].
-    #                               _company_default_get('procurement.group'))
-    #             values.setdefault('priority', '1')
-    #             values.setdefault('date_planned', fields.Datetime.now())
-
-    #             # # keep dest address empty to deliver to your own company
-    #             values.update({'partner_dest_id': False})
-    #             rule = line.order_id.procurement_group_id._get_rule(
-    #                 line.product_id, location_id, values)
-    #             if not rule:
-    #                 raise UserError(
-    #                     _('''No procurement rule found.
-    # Please verify the configuration of your routes'''))
-
-    #             # rule._run_buy(line.product_id, qty_to_purchase,
-    #             #               line.product_uom, location_id, line.name,
-    #             #               line.order_id.name, values)
-    #             self.env['procurement.group'].run(line.product_id, qty_to_purchase, line.product_uom,
-    #                                               line.order_id.partner_shipping_id.property_stock_customer, line.name, line.order_id.name, values)
-    #             # get dest location
-    #     #         type_obj = self.env['stock.picking.type']
-    #     #         company_id = self.env.context.get(
-    #     #             'company_id') or self.env.user.company_id.id
-    #     #         types = type_obj.search(
-    #     #             [('code', '=', 'incoming'),
-    #     #              ('warehouse_id.company_id', '=', company_id)])
-    #     #         if not types:
-    #     #             types = type_obj.search(
-    #     #                 [('code', '=', 'incoming'),
-    #     #                  ('warehouse_id', '=', False)])
-    #     #         location_id = exception_moves[:1].location_id
-
-    #     #         qty_to_purchase = line.product_uom_qty - \
-    #     #             line.product_id.qty_available
-    #     #         try:
-    #     #             rule._run_buy(line.product_id, qty_to_purchase,
-    #     #                           line.product_uom, location_id, line.name,
-    #     #                           line.order_id.name, values)
-    #     #         except UserError as error:
-    #     #             errors.append(error.name)
-    #     # if errors:
-    #     #     raise UserError('\n'.join(errors))
-    #     return True
 
     @api.multi
     def check_before_confirm(self):
@@ -165,40 +83,154 @@ class SaleOrder(models.Model):
 
             sub_task.sale_line_id = line.id
 
+    def create_po_from_so(self, s_order):
+        purchase = self.env['purchase.order']
+        for line in s_order.order_line:
+            product_rec = line.product_id
+            company_rec = self.env.user.company_id
+            if line.product_id.type in ('product'):
+                suppliers = product_rec.seller_ids
+                supplier = suppliers[:1]
+                type_obj = self.env['stock.picking.type']
+                types = type_obj.search(
+                    [('code', '=', 'incoming'),
+                     ('warehouse_id.company_id', '=', company_rec.id)])
+                if not types:
+                    types = type_obj.search(
+                        [('code', '=', 'incoming'),
+                         ('warehouse_id', '=', False)])
+                exception_moves = self.env['stock.move'].search(
+                    [('procure_method', '=', 'make_to_order'),
+                     ('product_id', '=', line.product_id.id),
+                     ('state', 'not in', ('cancel', 'done', 'draft'))])
+                for move in exception_moves:
+                    origin = (move.group_id and (move.group_id.name + ":") or "") + (
+                        move.rule_id and move.rule_id.name or move.origin or move.picking_id.name or "/")
+                if not exception_moves:
+                    origin = line.order_id.name
+                purchase_rec = purchase.search(
+                    [('partner_id', '=', supplier.name.id),
+                     ('state', 'in', ['draft', 'sent']),
+                     ('picking_type_id', '=', types[:1].id),
+                     ('company_id', '=', company_rec.id)])
+                if purchase_rec:
+                    purchase_rec = purchase_rec[:1]
+                if not purchase_rec:
+                    fpos = self.env['account.fiscal.position'].with_context(
+                        force_company=company_rec.id).get_fiscal_position(
+                        supplier.name.id)
+                    vals = {
+                        'partner_id': supplier.name.id,
+                        'picking_type_id': types[:1].id,
+                        'origin': origin,
+                        'company_id': company_rec.id,
+                        'fiscal_position_id': fpos,
+                    }
+                    purchase_rec = purchase.create(vals)
+                elif not purchase_rec.origin or origin not in \
+                        purchase_rec.origin.split(', '):
+                    if purchase_rec.origin:
+                        if origin:
+                            purchase_rec.write(
+                                {'origin': purchase_rec.origin +
+                                 ', ' + origin})
+                        else:
+                            purchase_rec.write({'origin': purchase_rec.origin})
+                    else:
+                        purchase_rec.write({'origin': origin})
+                # Create Line
+                purchase_line = False
+                for po_line in purchase_rec.order_line:
+                    if po_line.product_id.id == product_rec.id and po_line.product_uom == product_rec.uom_po_id:
+                        vals = self.update_po_line(
+                            po_line, supplier, company_rec,
+                            line)
+                        purchase_line = po_line.write(vals)
+                        break
+                if not purchase_line:
+                    vals = self._create_purchase_order_line(
+                        purchase_rec, product_rec, company_rec, line)
+                    self.env['purchase.order.line'].sudo().create(vals)
+
+    def update_po_line(self, line, seller, company_rec, so_line):
+        qty_to_purchase = self.get_quantity(so_line)
+        price_unit = self.env['account.tax']._fix_tax_included_price_company(
+            seller.price, line.product_id.supplier_taxes_id, line.taxes_id,
+            company_rec) if seller else 0.0
+        return {
+            'product_qty': qty_to_purchase,
+            'price_unit': price_unit,
+        }
+
+    def _create_purchase_order_line(self, purchase_rec,
+                                    product_rec, company_rec, line):
+        supplier = product_rec.seller_ids[:1]
+        qty_to_purchase = self.get_quantity(line)
+        seller = product_rec._select_seller(
+            partner_id=supplier.name,
+            quantity=qty_to_purchase,
+            date=purchase_rec.date_order and purchase_rec.date_order[:10],
+            uom_id=product_rec.uom_po_id)
+        taxes = product_rec.supplier_taxes_id
+        fpos = purchase_rec.fiscal_position_id
+        taxes_id = fpos.map_tax(taxes) if fpos else taxes
+        if taxes_id:
+            taxes_id = taxes_id.filtered(
+                lambda x: x.company_id.id == company_rec.id)
+        price_unit = self.env['account.tax']._fix_tax_included_price_company(
+            seller.price, product_rec.supplier_taxes_id,
+            taxes_id, company_rec) if seller else 0.0
+        date_planned = self.env['purchase.order.line']._get_date_planned(
+            seller, po=purchase_rec).strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        product_lang = product_rec.with_context({
+            'lang': supplier.name.lang,
+            'partner_id': supplier.name.id,
+        })
+        name = product_lang.display_name
+        return {
+            'name': name,
+            'product_qty': qty_to_purchase,
+            'product_id': product_rec.id,
+            'product_uom': product_rec.uom_po_id.id,
+            'price_unit': price_unit,
+            'date_planned': date_planned,
+            'taxes_id': [(6, 0, taxes_id.ids)],
+            'order_id': purchase_rec.id,
+        }
+
+    def get_quantity(self, so_line):
+        exception_moves = self.env['stock.move'].search(
+            [('product_id', '=', so_line.product_id.id),
+             ('state', 'not in', ('cancel', 'done', 'draft'))])
+        sale_pickings = exception_moves.filtered(
+            lambda em: em.picking_id.sale_id)
+        purchase_pickings = exception_moves.filtered(
+            lambda em: em.picking_id.purchase_id)
+        so_reserved_product_quantity = sum(
+            [exception_move.product_uom_qty
+             for
+             exception_move
+             in
+             sale_pickings])
+        po_reserved_product_quantity = sum(
+            [exception_move.product_uom_qty
+             for
+             exception_move
+             in
+             purchase_pickings])
+        qty = so_reserved_product_quantity - po_reserved_product_quantity - \
+            so_line.product_id.qty_available
+        if qty < 0:
+            qty = -qty
+        return qty
+
     @api.multi
     def action_confirm(self):
         for order in self:
             order.write({'client_po': order.rfq_num})
             status = self.env.user.has_group('sales_team.group_sale_manager')
-            ctx = self._context.copy()
-            for line in order.order_line:
-                exception_moves = self.env['stock.move'].search(
-                    [('procure_method', '=', 'make_to_order'),
-                     ('product_id', '=', line.product_id.id),
-                     ('state', 'not in', ('cancel', 'done', 'draft'))])
-                reserved_product_quantity = sum(
-                    [exception_move.product_uom_qty
-                     for
-                     exception_move
-                     in
-                     exception_moves])
-                qty_to_purchase = False
-                if not reserved_product_quantity:
-                    if line.product_uom_qty > line.product_id.qty_available:
-                        qty_to_purchase = line.product_uom_qty \
-                            - line.product_id.qty_available
-                if reserved_product_quantity:
-                    order_qty = reserved_product_quantity \
-                        + line.product_uom_qty
-                    if order_qty > line.product_id.qty_available:
-                        qty_to_purchase = line.product_uom_qty - \
-                            line.product_id.qty_available + \
-                            reserved_product_quantity
-                if qty_to_purchase < 0:
-                    qty_to_purchase = -qty_to_purchase
-                if qty_to_purchase:
-                    ctx.update({str(line.product_id.id): qty_to_purchase})
-            res = super(SaleOrder, order.with_context(ctx)).action_confirm()
+            res = super(SaleOrder, order).action_confirm()
+            self.create_po_from_so(order)
             if res:
                 if not status:
                     if order.state in ['sale', 'sent']:
