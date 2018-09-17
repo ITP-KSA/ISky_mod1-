@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.rule" id="print_and_pack_comp_rule">
+        <field name="name">Print and Pack</field>
+        <field name="model_id" ref="model_print_pack"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+    </record>
+</odoo>

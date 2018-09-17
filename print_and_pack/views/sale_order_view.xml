@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_order_form_inherit_ppa" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- <xpath expr="//button[@name='action_confirm'][1]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('print_and_pack', '=', True),('state', 'not in', ['sent'])]}</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][2]" position="attributes">
+                <attribute name="attrs">{'invisible': ['|',('print_and_pack', '=', True),('state', 'not in', ['draft'])]}</attribute>
+            </xpath> -->
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="states">draft,sent,sale,pack</attribute>
+            </xpath>
+            <!-- <xpath expr="//header" position="inside">
+                <button name="action_print_pack" type="object" string="Confirm" class="btn-primary" attrs="{'invisible': ['|',('print_and_pack', '=', False),('state', 'not in', ['sent', 'draft'])]}"/>
+                <button name="action_confirm" id="action_confirm"
+                        string="Confirm Sale" class="btn-primary" type="object"
+                        attrs="{'invisible': [('state', 'not in', ['pack'])]}"/>
+            </xpath> -->
+            <field name="payment_term_id" position="after">
+                <field name="print_and_pack"/>                
+            </field>
+        </field>
+    </record>
+</odoo>
