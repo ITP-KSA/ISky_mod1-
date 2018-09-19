@@ -21,15 +21,6 @@ class SaleOrder(models.Model):
     client_po = fields.Char(string="Client's P.O")
     project_id = fields.Many2one('project.project')
     rfq_num = fields.Char("RFQ#")
-    state = fields.Selection([
-        ('draft', 'Quotation'),
-        ('sent', 'Quotation Sent'),
-        ('sale', 'Sales Order'),
-        ('done', 'Locked'),
-        ('cancel', 'Cancelled'),
-        ('approve', 'To Approve')
-    ], string='Status', readonly=True, copy=False, index=True,
-        track_visibility='onchange', default='draft')
 
     @api.model
     def create(self, vals):
@@ -150,11 +141,14 @@ class SaleOrder(models.Model):
                 if not purchase_line:
                     vals = self._create_purchase_order_line(
                         purchase_rec, product_rec, company_rec, line)
-                    self.env['purchase.order.line'].sudo().create(vals)
+                    if vals.get('product_qty') > 0:
+                        self.env['purchase.order.line'].sudo().create(vals)
+                if not purchase_rec.order_line:
+                    purchase_rec.unlink()
 
     def update_po_line(self, line, seller, company_rec, so_line):
         qty_to_purchase = self.get_quantity(so_line)
-        price_unit = self.env['account.tax']._fix_tax_included_price_company(
+        price_unit = self.env['account_create_purchase_order_line.tax']._fix_tax_included_price_company(
             seller.price, line.product_id.supplier_taxes_id, line.taxes_id,
             company_rec) if seller else 0.0
         return {
@@ -218,8 +212,16 @@ class SaleOrder(models.Model):
              exception_move
              in
              purchase_pickings])
-        qty = so_reserved_product_quantity - po_reserved_product_quantity - \
-            so_line.product_id.qty_available
+        if not po_reserved_product_quantity:
+            if so_reserved_product_quantity < so_line.product_id.qty_available:
+                qty = 0
+            else:
+                qty = so_reserved_product_quantity - \
+                    so_line.product_id.qty_available
+        else:
+            qty = so_reserved_product_quantity - \
+                po_reserved_product_quantity - \
+                so_line.product_id.qty_available
         if qty < 0:
             qty = -qty
         return qty

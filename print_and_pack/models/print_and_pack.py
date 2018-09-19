@@ -18,12 +18,12 @@ class PrintPack(models.Model):
                              copy=False, default='draft',
                              track_visibility='onchange')
 
-    @api.depends('ppa_order_line.invoice_lines.invoice_id')
+    @api.depends('ppa_order_line.ppa_invoice_lines.invoice_id')
     def _compute_invoice(self):
         for order in self:
             invoices = self.env['account.invoice']
             for line in order.ppa_order_line:
-                invoices |= line.invoice_lines.mapped('invoice_id')
+                invoices |= line.ppa_invoice_lines.mapped('invoice_id')
             order.invoice_ids = invoices
             order.invoice_count = len(invoices)
 

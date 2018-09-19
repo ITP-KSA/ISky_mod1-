@@ -15,7 +15,7 @@ Add customizations to Sale and Purchase cycles.
     'depends': [
         'base',
         'account',
-        'sale_management',
+        'sale_order_states',
         'purchase',
         'stock',
         'project',

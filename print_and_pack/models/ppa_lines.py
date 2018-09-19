@@ -9,6 +9,9 @@ class PPALines(models.Model):
 
     name = fields.Text(string='Description', required=False)
     order_id = fields.Many2one("print.pack", string="PPA Order")
+    ppa_invoice_lines = fields.One2many(
+        'account.invoice.line', 'ppa_order_line_id', string="Bill Lines",
+        readonly=True, copy=False)
 
     @api.multi
     def _create_ppa_stock_moves(self, picking):
