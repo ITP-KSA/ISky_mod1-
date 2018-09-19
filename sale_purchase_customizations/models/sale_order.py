@@ -148,7 +148,7 @@ class SaleOrder(models.Model):
 
     def update_po_line(self, line, seller, company_rec, so_line):
         qty_to_purchase = self.get_quantity(so_line)
-        price_unit = self.env['account_create_purchase_order_line.tax']._fix_tax_included_price_company(
+        price_unit = self.env['account.tax']._fix_tax_included_price_company(
             seller.price, line.product_id.supplier_taxes_id, line.taxes_id,
             company_rec) if seller else 0.0
         return {
