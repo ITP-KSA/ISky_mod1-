@@ -14,11 +14,13 @@ class PPALines(models.Model):
         readonly=True, copy=False)
 
     @api.multi
-    def _create_ppa_stock_moves(self, picking):
+    def _create_ppa_stock_moves(self, picking, product_ids=False):
         moves = self.env['stock.move']
         done = self.env['stock.move'].browse()
         for line in self:
             for val in line._prepare_stock_moves(picking):
+                if product_ids:
+                    val.update({'product_id': product_ids[0]})
                 done += moves.create(val)
         return done
 
@@ -42,8 +44,8 @@ class PPALines(models.Model):
             'product_uom': self.product_uom.id,
             'date': self.order_id.date_order,
             'date_expected': self.date_planned,
-            'location_id': self.order_id.partner_id.property_stock_supplier.id,
-            'location_dest_id': self.order_id._get_destination_location(),
+            'location_id': picking.location_id.id,
+            'location_dest_id': picking.location_dest_id.id,
             'picking_id': picking.id,
             'partner_id': self.order_id.dest_address_id.id,
             'move_dest_ids': [(4, x) for x in self.move_dest_ids.ids],
@@ -51,7 +53,7 @@ class PPALines(models.Model):
             'ppa_line_id': self.id,
             'company_id': self.order_id.company_id.id,
             'price_unit': price_unit,
-            'picking_type_id': self.order_id.picking_type_id.id,
+            'picking_type_id': picking.picking_type_id.id,
             'group_id': self.order_id.group_id.id,
             'origin': self.order_id.name,
             'route_ids': self.order_id.picking_type_id.warehouse_id and [(6, 0, [x.id for x in self.order_id.picking_type_id.warehouse_id.route_ids])] or [],

@@ -95,8 +95,8 @@ class SaleOrder(models.Model):
                      ('product_id', '=', line.product_id.id),
                      ('state', 'not in', ('cancel', 'done', 'draft'))])
                 for move in exception_moves:
-                    origin = (move.group_id and (move.group_id.name + ":") or "") + (
-                        move.rule_id and move.rule_id.name or move.origin or move.picking_id.name or "/")
+                    origin = (move.group_id and (move.group_id.name + ":") or "") + \
+                        (move.rule_id and move.rule_id.name or move.origin or move.picking_id.name or "/")
                 if not exception_moves:
                     origin = line.order_id.name
                 purchase_rec = purchase.search(
@@ -132,7 +132,8 @@ class SaleOrder(models.Model):
                 # Create Line
                 purchase_line = False
                 for po_line in purchase_rec.order_line:
-                    if po_line.product_id.id == product_rec.id and po_line.product_uom == product_rec.uom_po_id:
+                    if po_line.product_id.id == product_rec.id and \
+                            po_line.product_uom == product_rec.uom_po_id:
                         vals = self.update_po_line(
                             po_line, supplier, company_rec,
                             line)
@@ -144,6 +145,7 @@ class SaleOrder(models.Model):
                     if vals.get('product_qty') > 0:
                         self.env['purchase.order.line'].sudo().create(vals)
                 if not purchase_rec.order_line:
+                    purchase_rec.write({'state': 'cancel'})
                     purchase_rec.unlink()
 
     def update_po_line(self, line, seller, company_rec, so_line):

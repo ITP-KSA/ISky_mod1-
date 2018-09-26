@@ -25,8 +25,6 @@ class Sale(models.Model):
                 supplier = suppliers[:1]
                 if not supplier and not print_pack_rec:
                     raise UserError(_("No any supplier for product!"))
-                if print_pack_rec:
-                    supplier = print_pack_rec.partner_id
                 print_pack_rec = print_pack.search(
                     [('sale_order_id', '=', order.id),
                      ('partner_id', '=', supplier.name.id)])
@@ -138,11 +136,9 @@ class Sale(models.Model):
     @api.multi
     def action_confirm(self):
         for order in self:
-            if order.print_and_pack:
-                print_pack_rec = self.create_print_and_pack()
-                res = super(Sale, order.with_context(
-                    print_pack=True,
-                    print_pack_rec=print_pack_rec)).action_confirm()
+            res = {}
+            if not self._context.get('printing') and order.print_and_pack:
+                self.create_print_and_pack()
                 self.write(
                     {'state': 'pack',
                      'confirmation_date': fields.Datetime.now()

@@ -10,7 +10,7 @@
     'website': "http://www.yourcompany.com",
     'category': 'sale',
     'version': '0.1',
-    'depends': ['sale_order_states', 'purchase', 'sale_stock'],
+    'depends': ['sale_stock', 'sale_purchase_customizations'],
     'data': [
         'security/ir.model.access.csv',
         'security/record_rules.xml',
