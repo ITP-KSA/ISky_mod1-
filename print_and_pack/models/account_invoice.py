@@ -65,7 +65,7 @@ class AccountInvoice(models.Model):
         self.payment_term_id = self.print_pack_id.payment_term_id
         self.env.context = dict(
             self.env.context, from_purchase_order_change=True)
-        self.print_pack_id = False
+        # self.print_pack_id = False
         return {}
 
     @api.onchange('purchase_id')

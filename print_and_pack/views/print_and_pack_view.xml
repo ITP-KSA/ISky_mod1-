@@ -21,6 +21,14 @@
         <field name="domain">[('print_pack_id', '=', active_id)]</field>
     </record>
 
+    <record id="action_view_ppa_invoice" model="ir.actions.act_window">
+        <field name="name">Printing Account Invoice</field>
+        <field name="res_model">account.invoice</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('print_pack_id', '=', active_id)]</field>
+    </record>
+
     <record id="print_and_pack_form_view" model="ir.ui.view">
         <field name="model">print.pack</field>
         <field name="arch" type="xml">
@@ -41,7 +49,7 @@
                             <field name="print_picking_count" widget="statinfo" string="Shipment" help="Incoming Shipments"/>
                             <field name="picking_ids" invisible="1"/>
                         </button>
-                        <button type="object"  name="action_view_ppa_invoice"
+                        <button type="action"  name="%(action_view_ppa_invoice)d"
                             class="oe_stat_button"
                             icon="fa-pencil-square-o" attrs="{'invisible':[('state', 'in', ('draft')),('invoice_ids','=',[])]}">
                             <field name="invoice_count" widget="statinfo" string="Vendor Bills"/>

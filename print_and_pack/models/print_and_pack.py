@@ -29,6 +29,15 @@ class PrintPack(models.Model):
             order.picking_ids = picking_count
             order.print_picking_count = len(picking_count)
 
+    @api.multi
+    def _compute_ppa_invoice(self):
+        for order in self:
+            invoices = self.env['account.invoice']
+            invoice_count = invoices.search(
+                [('print_pack_id', '=', order.id)])
+            order.invoice_ids = invoice_count
+            order.invoice_count = len(invoice_count)
+
     name = fields.Char('Order Reference', required=True,
                        index=True, copy=False, default='New')
     sale_order_id = fields.Many2one("sale.order", string="Sale Order",
@@ -53,15 +62,9 @@ class PrintPack(models.Model):
                                    compute='ppa_compute_picking',
                                    string='Receptions', copy=False,
                                    store=True, compute_sudo=True)
-
-    @api.depends('ppa_order_line.ppa_invoice_lines.invoice_id')
-    def _compute_invoice(self):
-        for order in self:
-            invoices = self.env['account.invoice']
-            for line in order.ppa_order_line:
-                invoices |= line.ppa_invoice_lines.mapped('invoice_id')
-            order.invoice_ids = invoices
-            order.invoice_count = len(invoices)
+    invoice_count = fields.Integer(
+        compute="_compute_ppa_invoice", string='# of Bills',
+        copy=False, default=0, store=False)
 
     @api.multi
     def action_view_ppa_invoice(self):
@@ -233,6 +236,7 @@ class PrintPack(models.Model):
             product = self.env['product.template']
             order_lines = order.ppa_order_line.filtered(
                 lambda p: p.product_id.type == 'product')
+            stock_quant = self.env['stock.quant']
             for order_line in order_lines:
                 vals = self.create_product(order_line)
                 if vals.get('name'):
@@ -255,6 +259,13 @@ class PrintPack(models.Model):
                     product_id=order_line.product_id.id).filtered(
                     lambda p: p.product_id.id == p._context['product_id'])
                 self.insert_sale_order_lines(sale_order_line, product_id)
+                picking_rec = self.env['stock.picking'].search(
+                    [('print_pack_id', '=', order.id)])
+                location_id = picking_rec.location_dest_id
+                stock_quant_rec = stock_quant.search(
+                    [('product_id', '=', sale_order_line.product_id.id),
+                     ('location_id', '=', location_id.id)])
+                stock_quant_rec.unlink()
                 sale_order_line.unlink()
             order.button_approve(product_ids)
         return True

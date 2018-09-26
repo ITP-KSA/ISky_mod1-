@@ -20,7 +20,9 @@ class PPALines(models.Model):
         for line in self:
             for val in line._prepare_stock_moves(picking):
                 if product_ids:
-                    val.update({'product_id': product_ids[0]})
+                    product = self.env['product.product'].search(
+                        [('product_tmpl_id', '=', product_ids[0])])
+                    val.update({'product_id': product.id})
                 done += moves.create(val)
         return done
 
