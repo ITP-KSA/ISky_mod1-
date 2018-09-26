@@ -20,9 +20,7 @@ class PrintPack(models.Model):
                 'amount_total': amount_untaxed + amount_tax,
             })
 
-    @api.depends('ppa_order_line.move_ids.returned_move_ids',
-                 'ppa_order_line.move_ids.state',
-                 'ppa_order_line.move_ids.picking_id')
+    @api.multi
     def ppa_compute_picking(self):
         for order in self:
             pickings = self.env['stock.picking']
@@ -43,7 +41,7 @@ class PrintPack(models.Model):
                              track_visibility='onchange')
     print_picking_count = fields.Integer(
         compute='ppa_compute_picking', string='Receptions',
-        default=0, store=True, compute_sudo=True)
+        default=0, compute_sudo=True)
     amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True,
                                      readonly=True, compute='_amount_all',
                                      track_visibility='always')
@@ -180,7 +178,6 @@ class PrintPack(models.Model):
         picking_vendor_rec = picking.create(vals)
         self.ppa_order_line._create_ppa_stock_moves(
             picking_vendor_rec)
-        print("\n\n\n\tStock Picking :::  ", picking_vendor_rec, "\n\n\n")
 
     @api.multi
     def button_confirm(self):
@@ -204,15 +201,16 @@ class PrintPack(models.Model):
     def create_product(self, line):
         vals = {}
         if line.product_id.type == 'product':
+            digits = line.order_id.sale_order_id.name.split('O')[1]
+            name = line.product_id.name + "_" + \
+                line.order_id.sale_order_id.partner_id.name + "_" + digits
             vals.update({
-                'name': line.product_id.name + "_" +
-                line.order_id.sale_order_id.name,
+                'name': name,
                 'type': 'product',
                 'sale_ok': True,
                 'purchase_ok': True,
                 'list_price': line.product_id.list_price
             })
-        print("\n\n\n\t", vals, "\n\n\n")
         return vals
 
     @api.multi
@@ -274,7 +272,6 @@ class PrintPack(models.Model):
                     picking = StockPicking.create(res)
                 else:
                     picking = pickings[0]
-                print("\n\n\n\tVendor to stock::::", picking, "\n\n\n")
                 moves = order.ppa_order_line._create_ppa_stock_moves(
                     picking, product_ids)
                 moves = moves.filtered(lambda x: x.state not in (

@@ -10,12 +10,21 @@ class Sale(models.Model):
 
     print_and_pack = fields.Boolean(string="Print and Pack")
 
+    @api.onchange('print_and_pack')
+    def _onchange_print_pack(self):
+        if self.sample:
+            self.sample = False
+
+    @api.onchange('sample')
+    def _onchange_sample(self):
+        if self.print_and_pack:
+            self.print_and_pack = False
+
     @api.multi
     def create_print_and_pack(self):
         print_pack = self.env['print.pack']
         print_pack_rec = False
         for order in self:
-            # order.order_line._action_launch_procurement_rule()
             stock_product_lines = order.order_line.filtered(
                 lambda o: o.product_id.type == 'product')
             for line in stock_product_lines:
@@ -45,72 +54,72 @@ class Sale(models.Model):
             # self.create_internal_picking(print_pack_rec, order)
         return print_pack_rec
 
-    @api.multi
-    def create_internal_picking(self, pack_rec, so):
-        order_lines = so.order_line.filtered(
-            lambda s: s.product_id.type == 'product')
-        print("order_lines", order_lines)
-        if order_lines:
-            picking = self.env['stock.picking']
-            vals = self.get_picking_vals(pack_rec)
-            picking_rec = picking.create(vals)
-            print("\n\n\n\t", picking_rec, "\n\n\n")
-        for line in order_lines:
-            group_id = line.order_id.procurement_group_id
-            if not group_id:
-                group_id = self.env['procurement.group'].create({
-                    'name': line.order_id.name,
-                    'move_type': line.order_id.picking_policy,
-                    'sale_id': line.order_id.id,
-                    'partner_id': line.order_id.partner_shipping_id.id,
-                })
-                line.order_id.procurement_group_id = group_id
-            move_line = self.env['stock.move']
-            vals = {
-                'additional': False,
-                'date_expected': datetime.now(),
-                'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
-                'location_id': 12,
-                'name': line.product_id.name,
-                'picking_id': picking_rec.id,
-                'picking_type_id': 1,
-                'product_id': line.product_id.id,
-                'product_uom': line.product_uom.id,
-                'state': 'draft',
-                'group_id': group_id.id}
-            move = move_line.create(vals)
-            self.create_stock_move_lines(move, line)
-            print("\n\n\nmove\t", move, "\n\n\n")
+    # @api.multi
+    # def create_internal_picking(self, pack_rec, so):
+    #     order_lines = so.order_line.filtered(
+    #         lambda s: s.product_id.type == 'product')
+    #     print("order_lines", order_lines)
+    #     if order_lines:
+    #         picking = self.env['stock.picking']
+    #         vals = self.get_picking_vals(pack_rec)
+    #         picking_rec = picking.create(vals)
+    #         print("\n\n\n\t", picking_rec, "\n\n\n")
+    #     for line in order_lines:
+    #         group_id = line.order_id.procurement_group_id
+    #         if not group_id:
+    #             group_id = self.env['procurement.group'].create({
+    #                 'name': line.order_id.name,
+    #                 'move_type': line.order_id.picking_policy,
+    #                 'sale_id': line.order_id.id,
+    #                 'partner_id': line.order_id.partner_shipping_id.id,
+    #             })
+    #             line.order_id.procurement_group_id = group_id
+    #         move_line = self.env['stock.move']
+    #         vals = {
+    #             'additional': False,
+    #             'date_expected': datetime.now(),
+    #             'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
+    #             'location_id': 12,
+    #             'name': line.product_id.name,
+    #             'picking_id': picking_rec.id,
+    #             'picking_type_id': 1,
+    #             'product_id': line.product_id.id,
+    #             'product_uom': line.product_uom.id,
+    #             'state': 'draft',
+    #             'group_id': group_id.id}
+    #         move = move_line.create(vals)
+    #         self.create_stock_move_lines(move, line)
+    #         print("\n\n\nmove\t", move, "\n\n\n")
 
-    @api.multi
-    def get_picking_vals(self, pack_rec):
-        return{
-            'location_id': 12,
-            'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
-            'move_type': 'direct',
-            'origin': False,
-            'owner_id': False,
-            'partner_id': False,
-            'picking_type_id': 1,
-            'priority': '1'
-        }
+    # @api.multi
+    # def get_picking_vals(self, pack_rec):
+    #     return{
+    #         'location_id': 12,
+    #         'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
+    #         'move_type': 'direct',
+    #         'origin': False,
+    #         'owner_id': False,
+    #         'partner_id': False,
+    #         'picking_type_id': 1,
+    #         'priority': '1'
+    #     }
 
-    @api.multi
-    def create_stock_move_lines(self, move, so_line):
-        vals = {'location_dest_id': move.location_dest_id.id,
-                'location_id': 12,
-                'lot_id': False,
-                'lot_name': False,
-                'move_id': move.id,
-                'owner_id': False,
-                'package_id': False,
-                'picking_id': move.picking_id.id,
-                'product_id': move.product_id.id,
-                'product_uom_id': move.product_uom.id,
-                'qty_done': so_line.product_uom_qty,
-                'result_package_id': False}
-        self.env['stock.move.line'].create(vals)
-        return True
+    # @api.multi
+    # def create_stock_move_lines(self, move, so_line):
+    #     vals = {'location_dest_id': move.location_dest_id.id,
+    #             'location_id': 12,
+    #             'lot_id': False,
+    #             'lot_name': False,
+    #             'move_id': move.id,
+    #             'owner_id': False,
+    #             'package_id': False,
+    #             'picking_id': move.picking_id.id,
+    #             'product_id': move.product_id.id,
+    #             'product_uom_id': move.product_uom.id,
+    #             'qty_done': so_line.product_uom_qty,
+    #             'result_package_id': False}
+    #     self.env['stock.move.line'].create(vals)
+    #     return True
 
     @api.multi
     def _create_print_order_line(self, print_pack_rec, so_line):

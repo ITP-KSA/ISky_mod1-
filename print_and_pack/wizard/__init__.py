@@ -1,1 +1,0 @@
-from . import receive_product
