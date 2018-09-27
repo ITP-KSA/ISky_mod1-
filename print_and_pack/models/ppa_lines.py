@@ -28,8 +28,9 @@ class PPALines(models.Model):
 
     @api.multi
     def _prepare_stock_moves(self, picking):
-        """ Prepare the stock moves data for one order line. This function returns a list of
-        dictionary ready to be used in stock.move's create()
+        """ Prepare the stock moves data for one order line.
+        This function returns a list of dictionary ready to be
+        used in stock.move's create()
         """
         self.ensure_one()
         res = []
@@ -37,9 +38,12 @@ class PPALines(models.Model):
             return res
         qty = 0.0
         price_unit = self._get_stock_move_price_unit()
-        for move in self.move_ids.filtered(lambda x: x.state != 'cancel' and not x.location_dest_id.usage == "supplier"):
+        for move in self.move_ids.filtered(
+                lambda x: x.state != 'cancel' and
+                not x.location_dest_id.usage == "supplier"):
             qty += move.product_uom._compute_quantity(
-                move.product_uom_qty, self.product_uom, rounding_method='HALF-UP')
+                move.product_uom_qty, self.product_uom,
+                rounding_method='HALF-UP')
         template = {
             'name': self.name or '',
             'product_id': self.product_id.id,
@@ -53,6 +57,7 @@ class PPALines(models.Model):
             'move_dest_ids': [(4, x) for x in self.move_dest_ids.ids],
             'state': 'draft',
             'ppa_line_id': self.id,
+            'product_uom_qty': self.product_qty,
             'company_id': self.order_id.company_id.id,
             'price_unit': price_unit,
             'picking_type_id': picking.picking_type_id.id,
@@ -62,15 +67,12 @@ class PPALines(models.Model):
             'warehouse_id': self.order_id.picking_type_id.warehouse_id.id,
         }
         diff_quantity = self.product_qty - qty
-        if float_compare(diff_quantity, 0.0,  precision_rounding=self.product_uom.rounding) > 0:
+        if float_compare(diff_quantity, 0.0,
+                         precision_rounding=self.product_uom.rounding) > 0:
             quant_uom = self.product_id.uom_id
             get_param = self.env['ir.config_parameter'].sudo().get_param
-            if self.product_uom.id != quant_uom.id and get_param('stock.propagate_uom') != '1':
-                product_qty = self.product_uom._compute_quantity(
-                    diff_quantity, quant_uom, rounding_method='HALF-UP')
+            if self.product_uom.id != quant_uom.id and \
+                    get_param('stock.propagate_uom') != '1':
                 template['product_uom'] = quant_uom.id
-                template['product_uom_qty'] = product_qty
-            else:
-                template['product_uom_qty'] = diff_quantity
             res.append(template)
         return res

@@ -241,6 +241,11 @@ class PrintPack(models.Model):
                 vals = self.create_product(order_line)
                 if vals.get('name'):
                     product_rec = product.create(vals)
+                picking_rec = self.env['stock.picking'].search(
+                    [('print_pack_id', '=', order.id)])
+                if picking_rec.state != 'done':
+                    raise UserError(
+                        _("Please send products to vendor location."))
                 # vendor_location = order.partner_id.property_stock_supplier
                 # quant_rec = self.env['stock.quant'].search(
                 #     [('location_id', '=', vendor_location.id),
@@ -259,8 +264,6 @@ class PrintPack(models.Model):
                     product_id=order_line.product_id.id).filtered(
                     lambda p: p.product_id.id == p._context['product_id'])
                 self.insert_sale_order_lines(sale_order_line, product_id)
-                picking_rec = self.env['stock.picking'].search(
-                    [('print_pack_id', '=', order.id)])
                 location_id = picking_rec.location_dest_id
                 stock_quant_rec = stock_quant.search(
                     [('product_id', '=', sale_order_line.product_id.id),
