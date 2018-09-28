@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import mimetypes
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 from datetime import datetime
@@ -9,6 +10,14 @@ class Sale(models.Model):
     _inherit = "sale.order"
 
     print_and_pack = fields.Boolean(string="Print and Pack")
+    ppa_document = fields.Binary(string="File")
+    file_name = fields.Char()
+
+    @api.onchange('file_name')
+    def get_mimetype(self):
+        for res in self:
+            if res.file_name:
+                res.mime_type = mimetypes.guess_type(res.file_name)
 
     @api.onchange('print_and_pack')
     def _onchange_print_pack(self):
@@ -44,7 +53,9 @@ class Sale(models.Model):
                         'partner_id': supplier.name.id,
                         'sale_order_id': order.id,
                         'company_id': company_rec.id,
-                        'date_planned': datetime.now()
+                        'date_planned': datetime.now(),
+                        'ppa_document': order.ppa_document,
+                        'file_name': order.file_name
                     }
                     print_pack_rec = print_pack.create(vals)
                 vals = self._create_print_order_line(

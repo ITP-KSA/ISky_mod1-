@@ -14,15 +14,17 @@ class PPALines(models.Model):
         readonly=True, copy=False)
 
     @api.multi
-    def _create_ppa_stock_moves(self, picking, product_ids=False):
+    def _create_ppa_stock_moves(self, picking, product_ids={}):
         moves = self.env['stock.move']
         done = self.env['stock.move'].browse()
         for line in self:
             for val in line._prepare_stock_moves(picking):
-                if product_ids:
-                    product = self.env['product.product'].search(
-                        [('product_tmpl_id', '=', product_ids[0])])
-                    val.update({'product_id': product.id})
+                for product_id in product_ids:
+                    if product_id.id == val['product_id']:
+                        product = self.env['product.product'].search(
+                            [('product_tmpl_id', '=',
+                                product_ids[product_id])])
+                        val.update({'product_id': product.id})
                 done += moves.create(val)
         return done
 

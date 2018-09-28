@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import mimetypes
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
@@ -65,6 +66,14 @@ class PrintPack(models.Model):
     invoice_count = fields.Integer(
         compute="_compute_ppa_invoice", string='# of Bills',
         copy=False, default=0, store=False)
+    ppa_document = fields.Binary(string="File")
+    file_name = fields.Char()
+
+    @api.onchange('file_name')
+    def get_mimetype(self):
+        for res in self:
+            if res.file_name:
+                res.mime_type = mimetypes.guess_type(res.file_name)
 
     @api.multi
     def action_view_ppa_invoice(self):
@@ -217,7 +226,7 @@ class PrintPack(models.Model):
         return vals
 
     @api.multi
-    def insert_sale_order_lines(self, order_line, product_id):
+    def insert_sale_order_lines(self, order_line, product_id, qty=0):
         so_line = self.env['sale.order.line']
         vals = {
             'product_id': product_id.id,
@@ -226,13 +235,17 @@ class PrintPack(models.Model):
             'product_uom_qty': order_line.product_uom_qty,
             'name': order_line.name,
             'product_uom': order_line.product_uom.id,
+            'line_item': order_line.line_item
         }
+        if qty != 0:
+            vals.update({'product_uom_qty': qty})
+        order_line.unlink()
         so_line.create(vals)
 
     @api.multi
     def button_receive_product(self):
         for order in self:
-            product_ids = []
+            product_ids = {}
             product = self.env['product.template']
             order_lines = order.ppa_order_line.filtered(
                 lambda p: p.product_id.type == 'product')
@@ -241,35 +254,45 @@ class PrintPack(models.Model):
                 vals = self.create_product(order_line)
                 if vals.get('name'):
                     product_rec = product.create(vals)
-                picking_rec = self.env['stock.picking'].search(
+                picking_recs = self.env['stock.picking'].search(
                     [('print_pack_id', '=', order.id)])
-                if picking_rec.state != 'done':
+                cancel_pickings = picking_recs.filtered(
+                    lambda p: p.state == 'cancel')
+                not_done_pickings = picking_recs.filtered(
+                    lambda p: p.state not in ['done', 'cancel'])
+                if not_done_pickings:
                     raise UserError(
                         _("Please send products to vendor location."))
-                # vendor_location = order.partner_id.property_stock_supplier
-                # quant_rec = self.env['stock.quant'].search(
-                #     [('location_id', '=', vendor_location.id),
-                #      ('product_id', '=', order_line.product_id.id)])
-                # if quant_rec.quantity < order_line.product_qty:
-                #     raise UserError(_("Before confirm this order please \
-                #         maintain product stock."))
                 product_id = self.env['product.product'].search(
                     [('product_tmpl_id', '=', product_rec.id)])
                 self.env['product.supplierinfo'].create({
                     'name': order_line.order_id.partner_id.id,
                     'product_tmpl_id': product_rec.id,
                     'product_id': product_id.id})
-                product_ids.append(product_rec.id)
+                product_ids.update({order_line.product_id: product_rec.id})
                 sale_order_line = order.sale_order_id.order_line.with_context(
                     product_id=order_line.product_id.id).filtered(
                     lambda p: p.product_id.id == p._context['product_id'])
-                self.insert_sale_order_lines(sale_order_line, product_id)
-                location_id = picking_rec.location_dest_id
+                sol_product_rec = sale_order_line.product_id
+                if cancel_pickings:
+                    move_line = cancel_pickings.mapped(
+                        'move_lines').with_context(
+                        product_id=sale_order_line.product_id.id).filtered(
+                        lambda p: p.product_id.id == p._context['product_id'])
+                    cancel_qty = sum(
+                        [move.product_uom_qty for move in move_line])
+                    qty = sale_order_line.product_uom_qty - cancel_qty
+                    if qty < 0:
+                        qty = -qty
+                    self.insert_sale_order_lines(
+                        sale_order_line, product_id, qty)
+                else:
+                    self.insert_sale_order_lines(sale_order_line, product_id)
+                location_id = picking_recs[:1].location_dest_id
                 stock_quant_rec = stock_quant.search(
-                    [('product_id', '=', sale_order_line.product_id.id),
+                    [('product_id', '=', sol_product_rec.id),
                      ('location_id', '=', location_id.id)])
                 stock_quant_rec.unlink()
-                sale_order_line.unlink()
             order.button_approve(product_ids)
         return True
 

@@ -72,7 +72,8 @@
                         <group>
                             <field name="date_order"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                            <field name="sale_order_id"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="ppa_document" filename="file_name" widget="preview_file" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
