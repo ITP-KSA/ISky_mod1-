@@ -20,7 +20,7 @@
                         attrs="{'invisible': [('state', 'not in', ['pack'])]}"/>
             </xpath> -->
             <field name="payment_term_id" position="after">
-                <field name="print_and_pack" attrs="{'readonly': [('state', 'in', ['sale', 'pack', 'done'])]}"/>                
+                <field name="print_and_pack" attrs="{'readonly': [('state', 'in', ['sale', 'pack', 'done', 'approve'])]}"/>                
                 <field name="ppa_document" attrs="{'invisible': [('print_and_pack', '=', False)], 'readonly': [('state', 'in', ['sale', 'pack', 'done'])]}" filename="file_name" widget="preview_file"/>
                 <field name="file_name" invisible="1"/>
             </field>

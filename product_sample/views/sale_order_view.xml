@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="sample"/>
+                <field name="sample" attrs="{'readonly': [('state', 'in', ['sale', 'pack', 'done', 'approve'])]}"/>
             </field>
             <field name="payment_term_id" position="after">
                 <field name="date_return" attrs="{'invisible': [('sample', '=', False)], 'required': [('sample', '=', True)]}"/>

@@ -155,6 +155,13 @@ class PrintPack(models.Model):
             order.ppa_order_line.write({'move_dest_ids': [(5, 0, 0)]})
 
         self.write({'state': 'cancel'})
+        printing_recs = self.search(
+            [('sale_order_id', '=', order.sale_order_id.id)])
+        done_prniting_recs = printing_recs.filtered(
+            lambda l: l.state in ['done', 'cancel'])
+        if len(printing_recs) == len(done_prniting_recs):
+            order.sale_order_id.with_context(
+                printing='done').action_confirm()
 
     def get_picking_vals(self, receipts=False):
         vals = {}
@@ -323,5 +330,11 @@ class PrintPack(models.Model):
                     values={'self': picking,
                             'origin': order},
                     subtype_id=self.env.ref('mail.mt_note').id)
-            order.sale_order_id.with_context(printing='done').action_confirm()
+            printing_recs = self.search(
+                [('sale_order_id', '=', order.sale_order_id.id)])
+            done_prniting_recs = printing_recs.filtered(
+                lambda l: l.state in ['done', 'cancel'])
+            if len(printing_recs) == len(done_prniting_recs):
+                order.sale_order_id.with_context(
+                    printing='done').action_confirm()
         return True

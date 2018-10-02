@@ -65,5 +65,19 @@
         <record id="project.act_project_project_2_project_task_all" model="ir.actions.act_window">
             <field name="domain">[('parent_id','=',False)]</field>
         </record>
+
+        <record id="view_task_search_form_inherited" model="ir.ui.view">
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_search_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='my_tasks']" position="after">
+                    <filter string="Sub Task" name="sub_tasks" domain="[('parent_id','=',False)]"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="project.action_view_task" model="ir.actions.act_window">
+            <field name="context">{'search_default_sub_tasks': 1}</field>
+        </record>
     </data>
 </odoo>

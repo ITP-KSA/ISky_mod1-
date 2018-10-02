@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
 
@@ -95,8 +95,10 @@ class SaleOrder(models.Model):
                      ('product_id', '=', line.product_id.id),
                      ('state', 'not in', ('cancel', 'done', 'draft'))])
                 for move in exception_moves:
-                    origin = (move.group_id and (move.group_id.name + ":") or "") + \
-                        (move.rule_id and move.rule_id.name or move.origin or move.picking_id.name or "/")
+                    origin = (move.group_id and
+                              (move.group_id.name + ":") or "") + \
+                        (move.rule_id and move.rule_id.name or
+                            move.origin or move.picking_id.name or "/")
                 if not exception_moves:
                     origin = line.order_id.name
                 purchase_rec = purchase.search(
@@ -110,6 +112,10 @@ class SaleOrder(models.Model):
                     fpos = self.env['account.fiscal.position'].with_context(
                         force_company=company_rec.id).get_fiscal_position(
                         supplier.name.id)
+                    if not supplier.name.id:
+                        raise UserError(
+                            _("Vendor is not defined in '%s' product." % (
+                                line.product_id.name)))
                     vals = {
                         'partner_id': supplier.name.id,
                         'picking_type_id': types[:1].id,
