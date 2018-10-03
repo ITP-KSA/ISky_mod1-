@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class SalesOrderLines(models.Model):
@@ -20,10 +21,16 @@ class SalesOrderLines(models.Model):
         string="Line Item #",
         help="Shows the sequence of this line in the sale order.")
 
-    # _sql_constraints = [
-    #     ('line_item_order_uniq', 'unique (line_item,order_id)',
-    #      'Line Item # must be unique per order!')
-    # ]
+    @api.multi
+    @api.constrains('line_item')
+    def _unique_line_item(self):
+        for sol in self:
+            line_item_list = sol.order_id.order_line.with_context(
+                id1=sol.id).filtered(
+                lambda l: l.id != l._context['id1']).mapped('line_item')
+            if sol.line_item in line_item_list:
+                raise ValidationError(
+                    _("Line Item # must be unique per order!"))
 
     @api.multi
     def _prepare_invoice_line(self, qty):
