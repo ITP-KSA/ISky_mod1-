@@ -66,7 +66,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]"/>
+                            <field name="partner_id" context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}" domain="[('supplier','=',True)]"
+                                required="0"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                             <field name="is_shipped" invisible="1"/>
                         </group>

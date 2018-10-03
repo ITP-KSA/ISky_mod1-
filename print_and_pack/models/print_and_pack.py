@@ -41,6 +41,9 @@ class PrintPack(models.Model):
 
     name = fields.Char('Order Reference', required=True,
                        index=True, copy=False, default='New')
+    partner_id = fields.Many2one('res.partner', string='Vendor',
+                                 change_default=True,
+                                 track_visibility='always')
     sale_order_id = fields.Many2one("sale.order", string="Sale Order",
                                     domain="[('print_and_pack', '=', True)]")
     ppa_order_line = fields.One2many("ppa.lines", "order_id")

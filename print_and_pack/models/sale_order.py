@@ -42,7 +42,8 @@ class Sale(models.Model):
                 suppliers = product_rec.seller_ids
                 supplier = suppliers[:1]
                 if not supplier and not print_pack_rec:
-                    raise UserError(_("No any supplier for product!"))
+                    raise UserError(_('''No any supplier
+                        for product "%s"!''') % line.product_id.name)
                 print_pack_rec = print_pack.search(
                     [('sale_order_id', '=', order.id),
                      ('partner_id', '=', supplier.name.id)])

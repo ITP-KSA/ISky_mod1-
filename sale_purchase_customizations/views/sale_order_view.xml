@@ -24,6 +24,7 @@
             </xpath>
             <xpath expr="//field[@name='order_line']/form/label[@for='name']" position="before">
                 <group col="4">
+                    <field name="line_item"/>
                     <field name="contact_info"/>
                     <field name="badge_number"/>
                     <field name="special_sale" invisible="1"/>
