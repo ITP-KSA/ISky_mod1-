@@ -27,6 +27,7 @@
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('print_pack_id', '=', active_id)]</field>
+        <field name="context">{'default_print_pack_id': active_id}</field>
     </record>
 
     <record id="print_and_pack_form_view" model="ir.ui.view">

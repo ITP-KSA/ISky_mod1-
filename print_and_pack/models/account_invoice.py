@@ -61,11 +61,10 @@ class AccountInvoice(models.Model):
             new_line._set_additional_fields(self)
             new_lines += new_line
 
-        self.invoice_line_ids += new_lines
+        self.invoice_line_ids = new_lines
         self.payment_term_id = self.print_pack_id.payment_term_id
         self.env.context = dict(
             self.env.context, from_purchase_order_change=True)
-        # self.print_pack_id = False
         return {}
 
     @api.onchange('purchase_id')

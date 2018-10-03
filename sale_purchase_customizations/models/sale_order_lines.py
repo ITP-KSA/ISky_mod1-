@@ -20,14 +20,10 @@ class SalesOrderLines(models.Model):
         string="Line Item #",
         help="Shows the sequence of this line in the sale order.")
 
-    _sql_constraints = [
-        ('line_item_order_uniq', 'unique (line_item,order_id)',
-         'Line Item # must be unique per order!')
-    ]
-
-    # @api.multi
-    # def name_get(self):
-    #     return [(value.id, "%s - %s - %s" % (value.order_id.name, value.order_id.product_id.name, value.product_uom_qty)) for value in self]
+    # _sql_constraints = [
+    #     ('line_item_order_uniq', 'unique (line_item,order_id)',
+    #      'Line Item # must be unique per order!')
+    # ]
 
     @api.multi
     def _prepare_invoice_line(self, qty):

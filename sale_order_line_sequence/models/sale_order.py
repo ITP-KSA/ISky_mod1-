@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from odoo import api, fields, models
 
 
@@ -16,23 +15,36 @@ class SaleOrder(models.Model):
         added as :  max_sequence + 1
         """
         for sale_order in self:
-            sale_order.max_line_sequence = (
-                max(sale_order.mapped('order_line.line_item') or [0]) + 1)
+            sale_line_recs = self.env['sale.order.line'].search(
+                [('order_id', '=', sale_order.id)])
+            if not sale_line_recs:
+                sale_order_id = self._context.get('params')
+                if sale_order_id:
+                    sale_order_id = sale_order_id.get('id')
+                if sale_order_id and sale_order.name != 'New':
+                    sale_line_recs = self.env['sale.order.line'].search(
+                        [('order_id', '=', sale_order_id)])
+            if not sale_line_recs:
+                sequence = (max(sale_order.mapped(
+                    'order_line.line_item') or [0]) + 1)
+            if sale_line_recs:
+                sequence_1 = (max(sale_order.mapped(
+                    'order_line.line_item') or [0]) + 1)
+                sequence_2 = max(sale_line_recs.mapped('line_item') or [0]) + 1
+                sequence = max(sequence_2, sequence_1)
+            sale_order.max_line_sequence = sequence
 
     max_line_sequence = fields.Integer(string='Max sequence in lines',
                                        compute='_compute_max_line_sequence',
                                        store=True)
 
-    # @api.multi
-    # def _reset_sequence(self):
-    #     for rec in self:
-    #         current_sequence = 1
-    #         for line in rec.order_line:
-    #             line.line_item = current_sequence
-    #             current_sequence += 1
-    #
-    # @api.multi
-    # def write(self, values):
-    #     res = super(SaleOrder, self).write(values)
-    #     self._reset_sequence()
-    #     return res
+
+class SaleOrderLine(models.Model):
+    _inherit = "sale.order.line"
+
+    @api.model
+    def create(self, vals):
+        sol_rec = super(SaleOrderLine, self).create(vals)
+        so_rec = sol_rec.order_id
+        sol_rec.line_item = max(so_rec.order_line.mapped('line_item')) + 1
+        return sol_rec
