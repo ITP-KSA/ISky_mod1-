@@ -19,7 +19,8 @@ class SalesOrderLines(models.Model):
 
     line_item = fields.Integer(
         string="Line Item #",
-        help="Shows the sequence of this line in the sale order.")
+        help="Shows the sequence of this line in the sale order.",
+        copy=False)
 
     @api.multi
     @api.constrains('line_item')
