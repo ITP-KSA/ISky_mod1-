@@ -32,3 +32,6 @@ class StockMoveLine(models.Model):
         string="SMACC Code", related="product_id.product_smacc_code")
     product_samj_code = fields.Char(
         string="SAMJ Code", related="product_id.product_samj_code")
+    internal_category = fields.Many2one('product.category',
+                                        related="product_id.categ_id",
+                                        store=True)
