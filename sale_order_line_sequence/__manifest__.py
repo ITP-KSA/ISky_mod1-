@@ -7,10 +7,7 @@
     'category': 'Sale',
     'website': '',
     'depends': ['sale_purchase_customizations', 'event_sale'],
-    'data': [
-
-    ],
-    # 'post_init_hook': 'post_init_hook',
+    'data': [],
     'license': 'AGPL-3',
     'installable': True,
 }
