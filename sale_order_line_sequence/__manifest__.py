@@ -6,7 +6,7 @@
     "summary": "Adds sequence field on Sale Order lines to manage its order.",
     'category': 'Sale',
     'website': '',
-    'depends': ['sale_purchase_customizations', 'event_sale'],
+    'depends': ['sale_purchase_customizations'],
     'data': [],
     'license': 'AGPL-3',
     'installable': True,
