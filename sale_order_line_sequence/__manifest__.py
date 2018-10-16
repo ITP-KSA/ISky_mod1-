@@ -7,7 +7,9 @@
     'category': 'Sale',
     'website': '',
     'depends': ['sale_purchase_customizations', 'event_sale'],
-    'data': ['views/sale_order_line_view.xml'],
+    'data': [
+
+    ],
     # 'post_init_hook': 'post_init_hook',
     'license': 'AGPL-3',
     'installable': True,
