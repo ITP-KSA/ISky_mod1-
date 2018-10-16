@@ -89,3 +89,4 @@ class ProductTemplate(models.Model):
         if product_ids and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
         return True
+
