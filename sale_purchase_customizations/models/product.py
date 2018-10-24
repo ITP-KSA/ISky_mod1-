@@ -21,7 +21,12 @@ class ProductProduct(models.Model):
                   ]
         if domain:
             domain = ['|'] * 6 + domain
+        tmpl_recs = self.env['product.template'].search(
+            domain + args, limit=limit)
+        product = self.search([('product_tmpl_id', 'in', tmpl_recs.ids)])
         recs = self.search(domain + args, limit=limit)
+        ids = product.ids + recs.ids
+        recs = self.browse(ids)
         return recs.name_get()
 
     product_part = fields.Char(string="Part")
@@ -89,4 +94,3 @@ class ProductTemplate(models.Model):
         if product_ids and self.product_samj_code:
             raise UserError("The SAMJ CODE must be unique!")
         return True
-
