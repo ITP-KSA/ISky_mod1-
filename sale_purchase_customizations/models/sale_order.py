@@ -123,18 +123,19 @@ class SaleOrder(models.Model):
                         'company_id': company_rec.id,
                         'fiscal_position_id': fpos,
                     }
-                    purchase_rec = purchase.create(vals)
+                    purchase_rec = purchase.sudo().create(vals)
                 elif not purchase_rec.origin or origin not in \
                         purchase_rec.origin.split(', '):
                     if purchase_rec.origin:
                         if origin:
-                            purchase_rec.write(
+                            purchase_rec.sudo().write(
                                 {'origin': purchase_rec.origin +
                                  ', ' + origin})
                         else:
-                            purchase_rec.write({'origin': purchase_rec.origin})
+                            purchase_rec.sudo().write(
+                                {'origin': purchase_rec.origin})
                     else:
-                        purchase_rec.write({'origin': origin})
+                        purchase_rec.sudo().write({'origin': origin})
                 # Create Line
                 purchase_line = False
                 for po_line in purchase_rec.order_line:
@@ -143,7 +144,7 @@ class SaleOrder(models.Model):
                         vals = self.update_po_line(
                             po_line, supplier, company_rec,
                             line)
-                        purchase_line = po_line.write(vals)
+                        purchase_line = po_line.sudo().write(vals)
                         break
                 if not purchase_line:
                     vals = self._create_purchase_order_line(
@@ -151,8 +152,8 @@ class SaleOrder(models.Model):
                     if vals.get('product_qty') > 0:
                         self.env['purchase.order.line'].sudo().create(vals)
                 if not purchase_rec.order_line:
-                    purchase_rec.write({'state': 'cancel'})
-                    purchase_rec.unlink()
+                    purchase_rec.sudo().write({'state': 'cancel'})
+                    purchase_rec.sudo().unlink()
 
     def update_po_line(self, line, seller, company_rec, so_line):
         qty_to_purchase = self.get_quantity(so_line)
