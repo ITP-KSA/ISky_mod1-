@@ -21,12 +21,18 @@ class ProductProduct(models.Model):
                   ]
         if domain:
             domain = ['|'] * 6 + domain
-        tmpl_recs = self.env['product.template'].search(
-            domain + args, limit=limit)
-        product = self.search([('product_tmpl_id', 'in', tmpl_recs.ids)])
-        recs = self.search(domain + args, limit=limit)
-        ids = product.ids + recs.ids
-        recs = self.browse(ids)
+        try:
+            tmpl_recs = self.env['product.template'].search(
+                domain + args, limit=limit)
+        except Exception as e:
+            tmpl_recs = False
+        if tmpl_recs:
+            product = self.search([('product_tmpl_id', 'in', tmpl_recs.ids)])
+            recs = self.search(domain + args, limit=limit)
+            ids = product.ids + recs.ids
+            recs = self.browse(ids)
+        else:
+            recs = self.search(domain + args, limit=limit)
         return recs.name_get()
 
     product_part = fields.Char(string="Part")
