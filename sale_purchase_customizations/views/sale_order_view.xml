@@ -47,4 +47,22 @@
             </xpath>
         </field>
     </record>
+
+    <record id="sale.action_quotations" model="ir.actions.act_window">
+        <field name="context">{'default_picking_policy': False}</field>
+    </record>
+    <record id="sale.action_orders" model="ir.actions.act_window">
+        <field name="context">{'default_picking_policy': False}</field>
+    </record>
+
+    <record id="search_filter_inherited_sale_po" model="ir.ui.view">
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="client_po"/>
+                <field name="rfq_num"/>
+            </field>
+        </field>
+    </record>
 </odoo>
