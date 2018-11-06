@@ -17,10 +17,19 @@ class SaleOrderLine(models.Model):
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
+    @api.multi
+    def get_default_warehouse(self):
+        return self.env['stock.warehouse']
+
     special_sale = fields.Boolean(string="Special Sale", default=True)
     client_po = fields.Char(string="Client's P.O")
     project_id = fields.Many2one('project.project')
     rfq_num = fields.Char("RFQ#")
+    warehouse_id = fields.Many2one(
+        'stock.warehouse', string='Warehouse',
+        required=True, readonly=True,
+        states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
+        default=get_default_warehouse)
 
     @api.model
     def create(self, vals):
