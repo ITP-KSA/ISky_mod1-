@@ -48,40 +48,49 @@ class SaleOrder(models.Model):
             rfq_num = self.rfq_num
             if not self.rfq_num:
                 rfq_num = ''
-            task = self.env['project.task'].sudo().create({
-                'name': self.partner_id.name + "-" + rfq_num,
-                'project_id': self.project_id.id,
-                'sale_order_id': self.id,
-                'partner_id': self.partner_id.id,
-            })
-            parent = task.id
-            project = self.project_id
+            task_rec = self.env['project.task'].sudo().search(
+                [('sale_order_id', '=', self.id),
+                 ('parent_id', '=', False)])
+            if not task_rec:
+                task = self.env['project.task'].sudo().create({
+                    'name': self.partner_id.name + "-" + rfq_num,
+                    'project_id': self.project_id.id,
+                    'sale_order_id': self.id,
+                    'partner_id': self.partner_id.id,
+                })
+                parent = task.id
+                project = self.project_id
         else:
             # Step#1: create new project with Name of the client and S.O.#
             if self.client_po:
                 client_po = self.client_po
             else:
                 client_po = ''
-            project = self.env['project.project'].sudo().create({
-                'name': client_po + "-" + self.name,
-                'rfq_num': self.rfq_num,
-            })
-            project.task_ids = False
+            project_rec = self.env['project.project'].sudo().search(
+                [('rfq_num', '=', self.rfq_num), ('sale_id', '=', self.id)])
+            if not project_rec:
+                project = self.env['project.project'].sudo().create({
+                    'name': client_po + "-" + self.name,
+                    'rfq_num': self.rfq_num,
+                    'sale_id': self.id
+                })
+                project.task_ids = False
         # Step#2: For each line in the order lines (having service products)
         # create a task in the above created project
-        for line in self.order_line:
-            sub_task = self.env['project.task'].sudo().create({
-                'name': line.product_id.name,
-                'project_id': project.id,
-                'partner_id': self.partner_id.id,
-                'parent_id': parent,
-                'contact_info': line.contact_info,
-                'badge_number': line.badge_number,
-                'special_sale': line.special_sale,
-                'line_item': line.line_item
-            })
+        if project:
+            for line in self.order_line:
+                sub_task = self.env['project.task'].sudo().create({
+                    'name': line.product_id.name,
+                    'project_id': project.id,
+                    'partner_id': self.partner_id.id,
+                    'parent_id': parent,
+                    'contact_info': line.contact_info,
+                    'badge_number': line.badge_number,
+                    'special_sale': line.special_sale,
+                    'line_item': line.line_item
+                })
 
-            sub_task.sale_line_id = line.id
+                sub_task.sale_line_id = line.id
 
     def create_po_from_so(self, s_order):
         purchase = self.env['purchase.order']

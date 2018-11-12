@@ -160,6 +160,10 @@ class Sale(models.Model):
             res = {}
             if not self._context.get('printing') and order.print_and_pack:
                 self.create_print_and_pack()
+                status = self.env.user.has_group(
+                    'sales_team.group_sale_manager')
+                if status:
+                    self.check_before_confirm()
                 self.write(
                     {'state': 'pack',
                      'confirmation_date': fields.Datetime.now()

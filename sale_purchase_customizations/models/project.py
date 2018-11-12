@@ -5,6 +5,7 @@ class projectProjectInh(models.Model):
     _inherit = 'project.project'
 
     rfq_num = fields.Char("RFQ#")
+    sale_id = fields.Many2one('sale.order', 'Sale Order')
     privacy_visibility = fields.Selection([
         ('followers', _('On invitation only')),
         ('employees', _('Visible by all employees')),
