@@ -8,6 +8,25 @@ class PrintPack(models.Model):
     _name = "print.pack"
     _inherit = "purchase.order"
 
+    READONLY_STATES = {
+        'purchase': [('readonly', True)],
+        'done': [('readonly', True)],
+        'cancel': [('readonly', True)],
+    }
+
+    @api.model
+    def _default_picking_type(self):
+        type_obj = self.env['stock.picking.type']
+        company_id = self.env.context.get(
+            'company_id') or self.env.user.company_id.id
+        types = type_obj.search(
+            [('code', '=', 'incoming'),
+             ('warehouse_id.company_id', '=', company_id)])
+        if not types:
+            types = type_obj.search(
+                [('code', '=', 'incoming'), ('warehouse_id', '=', False)])
+        return types[:1]
+
     @api.depends('ppa_order_line.price_total')
     def _amount_all(self):
         for order in self:
@@ -71,6 +90,11 @@ class PrintPack(models.Model):
         copy=False, default=0, store=False)
     ppa_document = fields.Binary(string="File")
     file_name = fields.Char()
+    picking_type_id = fields.Many2one(
+        'stock.picking.type', 'Deliver To',
+        states=READONLY_STATES, required=True,
+        default=_default_picking_type,
+        help="This will determine operation type of incoming shipment")
 
     @api.onchange('file_name')
     def get_mimetype(self):
