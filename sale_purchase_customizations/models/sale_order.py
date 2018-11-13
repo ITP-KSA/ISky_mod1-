@@ -258,10 +258,17 @@ class SaleOrder(models.Model):
         for order in self:
             order.write({'client_po': order.rfq_num})
             status = self.env.user.has_group('sales_team.group_sale_manager')
-            if not status:
+            # check product_sample module is installed or not.
+            self.env.cr.execute(
+                "select state from ir_module_module where name like 'product_sample'")
+            module_state = self.env.cr.fetchall()
+            sample_state = False
+            if module_state[0][0] == 'installed':
+                sample_state = order.sample
+            if not status and not sample_state:
                 if order.state in ['draft', 'sent']:
                     order.state = 'approve'
-            if status:
+            if status and not sample_state:
                 res = super(SaleOrder, order).action_confirm()
                 self.create_po_from_so(order)
                 if res:
@@ -269,6 +276,8 @@ class SaleOrder(models.Model):
                 for picking in order.picking_ids:
                     if not picking.client_po:
                         picking.client_po = order.client_po
+            if sample_state:
+                res = super(SaleOrder, order).action_confirm()
         return True
 
     @api.multi
