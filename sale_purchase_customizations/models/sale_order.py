@@ -258,13 +258,13 @@ class SaleOrder(models.Model):
         for order in self:
             order.write({'client_po': order.rfq_num})
             status = self.env.user.has_group('sales_team.group_sale_manager')
-            res = super(SaleOrder, order).action_confirm()
-            self.create_po_from_so(order)
-            if res:
-                if not status:
-                    if order.state in ['sale', 'sent']:
-                        order.state = 'approve'
-                if status:
+            if not status:
+                if order.state in ['draft', 'sent']:
+                    order.state = 'approve'
+            if status:
+                res = super(SaleOrder, order).action_confirm()
+                self.create_po_from_so(order)
+                if res:
                     order.check_before_confirm()
                 for picking in order.picking_ids:
                     if not picking.client_po:

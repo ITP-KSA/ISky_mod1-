@@ -63,75 +63,7 @@ class Sale(models.Model):
                     print_pack_rec, line)
                 self.env['ppa.lines'].sudo().create(vals)
                 self.with_context(ppa_rec=print_pack_rec.id)
-            # self.create_internal_picking(print_pack_rec, order)
         return print_pack_rec
-
-    # @api.multi
-    # def create_internal_picking(self, pack_rec, so):
-    #     order_lines = so.order_line.filtered(
-    #         lambda s: s.product_id.type == 'product')
-    #     print("order_lines", order_lines)
-    #     if order_lines:
-    #         picking = self.env['stock.picking']
-    #         vals = self.get_picking_vals(pack_rec)
-    #         picking_rec = picking.create(vals)
-    #         print("\n\n\n\t", picking_rec, "\n\n\n")
-    #     for line in order_lines:
-    #         group_id = line.order_id.procurement_group_id
-    #         if not group_id:
-    #             group_id = self.env['procurement.group'].create({
-    #                 'name': line.order_id.name,
-    #                 'move_type': line.order_id.picking_policy,
-    #                 'sale_id': line.order_id.id,
-    #                 'partner_id': line.order_id.partner_shipping_id.id,
-    #             })
-    #             line.order_id.procurement_group_id = group_id
-    #         move_line = self.env['stock.move']
-    #         vals = {
-    #             'additional': False,
-    #             'date_expected': datetime.now(),
-    #             'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
-    #             'location_id': 12,
-    #             'name': line.product_id.name,
-    #             'picking_id': picking_rec.id,
-    #             'picking_type_id': 1,
-    #             'product_id': line.product_id.id,
-    #             'product_uom': line.product_uom.id,
-    #             'state': 'draft',
-    #             'group_id': group_id.id}
-    #         move = move_line.create(vals)
-    #         self.create_stock_move_lines(move, line)
-    #         print("\n\n\nmove\t", move, "\n\n\n")
-
-    # @api.multi
-    # def get_picking_vals(self, pack_rec):
-    #     return{
-    #         'location_id': 12,
-    #         'location_dest_id': pack_rec.partner_id.property_stock_supplier.id,
-    #         'move_type': 'direct',
-    #         'origin': False,
-    #         'owner_id': False,
-    #         'partner_id': False,
-    #         'picking_type_id': 1,
-    #         'priority': '1'
-    #     }
-
-    # @api.multi
-    # def create_stock_move_lines(self, move, so_line):
-    #     vals = {'location_dest_id': move.location_dest_id.id,
-    #             'location_id': 12,
-    #             'lot_id': False,
-    #             'lot_name': False,
-    #             'move_id': move.id,
-    #             'owner_id': False,
-    #             'package_id': False,
-    #             'picking_id': move.picking_id.id,
-    #             'product_id': move.product_id.id,
-    #             'product_uom_id': move.product_uom.id,
-    #             'qty_done': so_line.product_uom_qty,
-    #             'result_package_id': False}
-    #     self.env['stock.move.line'].create(vals)
-    #     return True
 
     @api.multi
     def _create_print_order_line(self, print_pack_rec, so_line):
@@ -159,15 +91,17 @@ class Sale(models.Model):
         for order in self:
             res = {}
             if not self._context.get('printing') and order.print_and_pack:
-                self.create_print_and_pack()
                 status = self.env.user.has_group(
                     'sales_team.group_sale_manager')
                 if status:
+                    self.create_print_and_pack()
                     self.check_before_confirm()
-                self.write(
-                    {'state': 'pack',
-                     'confirmation_date': fields.Datetime.now()
-                     })
+                    self.write(
+                        {'state': 'pack',
+                         'confirmation_date': fields.Datetime.now()
+                         })
+                else:
+                    res = super(Sale, order).action_confirm()
             else:
                 res = super(Sale, order).action_confirm()
         return res
