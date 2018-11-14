@@ -44,6 +44,8 @@
                 <attribute name="type">action</attribute>
                 <attribute name="name">%(action_sale_or_invoice)d</attribute>
             </xpath> -->
+
+
         </field>
     </record>
 
