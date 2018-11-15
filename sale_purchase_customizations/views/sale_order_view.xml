@@ -36,16 +36,14 @@
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="client_po" attrs="{'readonly': [('state', 'in', ['done'])], 'invisible': [('state', 'in', ['draft','sent'])]}"/>
             </xpath>
-<!--             <xpath expr="//button[@name='print_quotation' and @states='draft']" position="attributes">
+            <xpath expr="//button[@name='print_quotation' and @states='draft']" position="attributes">
                 <attribute name="type">action</attribute>
                 <attribute name="name">%(action_sale_or_invoice)d</attribute>
             </xpath>
             <xpath expr="//button[@name='print_quotation' and @states='sent,sale']" position="attributes">
                 <attribute name="type">action</attribute>
                 <attribute name="name">%(action_sale_or_invoice)d</attribute>
-            </xpath> -->
-
-
+            </xpath>
         </field>
     </record>
 
